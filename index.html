@@ -126,12 +126,12 @@
                     <i class="fa-brands fa-google-drive"></i>
                 </div>
                 <div>
-                    <h4 class="text-xs sm:text-sm font-bold text-slate-800">구글 드라이브 폴더에 사진과 내역을 실시간 자동 저장하시겠습니까?</h4>
-                    <p class="text-[11px] sm:text-xs text-slate-600 mt-0.5">현재 브라우저에만 저장 중입니다. 1회 간단 설정으로 지정 폴더(<span class="font-mono text-indigo-600 font-semibold">1_Z2iV8nVzn...</span>)에 영수증 파일과 엑셀 시트가 바로 저장됩니다.</p>
+                    <h4 class="text-xs sm:text-sm font-bold text-slate-800">모바일 기기에 구글 드라이브 연동 주소 등록이 필요합니다</h4>
+                    <p class="text-[11px] sm:text-xs text-slate-600 mt-0.5">스마트폰 브라우저는 PC와 저장소가 분리되어 있습니다. 상단 <strong>[구글 드라이브 연동]</strong>에 웹앱 URL을 1회 등록하시면 '법인카드 영수증 db' 데이터가 모바일에서도 즉시 자동 로딩됩니다.</p>
                 </div>
             </div>
             <button type="button" onclick="openDriveSettingsModal()" class="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-sm whitespace-nowrap flex items-center justify-center gap-1.5 flex-shrink-0">
-                <i class="fa-solid fa-gear"></i> 1분 연동 설정하기
+                <i class="fa-solid fa-gear"></i> 연동 주소 입력하기
             </button>
         </div>
 
@@ -641,7 +641,13 @@ function doPost(e) {
 
         // 구글 드라이브 '법인카드 영수증 db'에서 최신 데이터 자동 불러오기
         async function fetchFromGoogleDrive(isSilent = false) {
-            if (!driveSettings.webhookUrl || !driveSettings.webhookUrl.startsWith('http')) return;
+            if (!driveSettings.webhookUrl || !driveSettings.webhookUrl.startsWith('http')) {
+                if (!isSilent) {
+                    showToast('상단 [구글 드라이브 연동]에서 웹앱 URL을 먼저 등록해주세요.', 'error');
+                    openDriveSettingsModal();
+                }
+                return;
+            }
 
             const spinIcon = document.getElementById('syncSpinIcon');
             const loader = document.getElementById('loadingIndicator');
@@ -649,8 +655,18 @@ function doPost(e) {
             if (loader) loader.classList.remove('hidden');
 
             try {
-                const res = await fetch(driveSettings.webhookUrl);
-                if (!res.ok) throw new Error('Network response not ok');
+                // 모바일 브라우저(Safari, Chrome)의 리다이렉트 추적 설정
+                const fetchUrl = driveSettings.webhookUrl + (driveSettings.webhookUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
+                const res = await fetch(fetchUrl, {
+                    method: 'GET',
+                    redirect: 'follow',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!res.ok) {
+                    throw new Error(`서버 응답 오류 (상태코드: ${res.status})`);
+                }
+
                 const result = await res.json();
 
                 if (result && result.status === 'success' && Array.isArray(result.data)) {
@@ -661,14 +677,14 @@ function doPost(e) {
                     }));
                     saveToStorage();
                     filterExpenses();
-                    if (!isSilent) {
-                        showToast(`구글 드라이브 '법인카드 영수증 db'에서 저장된 내역 ${result.data.length}건을 로딩했습니다!`, 'success');
-                    }
+                    showToast(`구글 드라이브 '법인카드 영수증 db'에서 ${result.data.length}건을 로딩했습니다!`, 'success');
+                } else {
+                    throw new Error(result.message || '데이터 형식 오류');
                 }
             } catch (err) {
-                console.warn('Google Drive auto-fetch error (CORS or network):', err);
+                console.warn('Google Drive fetch error:', err);
                 if (!isSilent) {
-                    showToast('구글 드라이브 로딩 중 네트워크 오류가 발생했습니다. 구글 드라이브에 저장 완료된 내역만 유지합니다.');
+                    showToast('구글 드라이브 로딩 실패: 구글 스크립트에서 [새 버전 배포] 및 액세스 권한(모든 사용자)을 확인해주세요.', 'error');
                 }
             } finally {
                 if (spinIcon) spinIcon.classList.remove('fa-spin');
