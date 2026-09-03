@@ -48,6 +48,9 @@
 
             <!-- Action Buttons Toolbar -->
             <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+                <button type="button" onclick="fetchFromGoogleDrive()" title="구글 드라이브 DB에서 최신 데이터 즉시 새로고침" class="bg-indigo-800 hover:bg-indigo-900 text-white px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition shadow-sm flex items-center gap-1.5 border border-indigo-600">
+                    <i id="syncSpinIcon" class="fa-solid fa-arrows-rotate text-emerald-400"></i> <span class="hidden xs:inline">동기화</span>
+                </button>
                 <button type="button" onclick="openAiSettingsModal()" class="bg-purple-800/90 hover:bg-purple-700 text-white px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition shadow-sm flex items-center gap-1.5 border border-purple-500/60">
                     <i class="fa-solid fa-key text-amber-300"></i> AI 키 설정
                 </button>
@@ -103,17 +106,33 @@
                     <i class="fa-solid fa-camera"></i>
                 </div>
             </div>
-            <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+            <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition" onclick="openDriveSettingsModal()">
                 <div>
-                    <p class="text-[11px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">드라이브 연동</p>
-                    <h3 id="statSyncStatus" class="text-xs sm:text-sm font-bold text-emerald-600 mt-2 flex items-center gap-1">
-                        <i class="fa-solid fa-check-circle"></i> 준비 완료
+                    <p class="text-[11px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">드라이브 연동 상태</p>
+                    <h3 id="statSyncStatus" class="text-xs sm:text-sm font-bold text-amber-600 mt-2 flex items-center gap-1">
+                        <i class="fa-solid fa-triangle-exclamation"></i> 설정 필요
                     </h3>
                 </div>
                 <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-lg sm:text-xl">
                     <i class="fa-brands fa-google-drive"></i>
                 </div>
             </div>
+        </div>
+
+        <!-- Google Drive Setup Alert Banner (Visible when webhook is not configured) -->
+        <div id="driveAlertBanner" class="bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-emerald-500/10 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div class="flex items-start gap-3">
+                <div class="w-9 h-9 bg-amber-100 text-amber-700 rounded-xl flex items-center justify-center flex-shrink-0 text-base mt-0.5">
+                    <i class="fa-brands fa-google-drive"></i>
+                </div>
+                <div>
+                    <h4 class="text-xs sm:text-sm font-bold text-slate-800">구글 드라이브 폴더에 사진과 내역을 실시간 자동 저장하시겠습니까?</h4>
+                    <p class="text-[11px] sm:text-xs text-slate-600 mt-0.5">현재 브라우저에만 저장 중입니다. 1회 간단 설정으로 지정 폴더(<span class="font-mono text-indigo-600 font-semibold">1_Z2iV8nVzn...</span>)에 영수증 파일과 엑셀 시트가 바로 저장됩니다.</p>
+                </div>
+            </div>
+            <button type="button" onclick="openDriveSettingsModal()" class="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-sm whitespace-nowrap flex items-center justify-center gap-1.5 flex-shrink-0">
+                <i class="fa-solid fa-gear"></i> 1분 연동 설정하기
+            </button>
         </div>
 
         <!-- Search and Filters -->
@@ -157,9 +176,14 @@
             <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/60">
                 <div class="flex items-center gap-2">
                     <h3 class="font-bold text-slate-800 text-sm sm:text-base">지출 내역 목록</h3>
-                    <span class="text-[11px] text-slate-500 hidden sm:inline">('법인카드 영수증_YYYY-MM.xlsx' 파일로 저장됩니다)</span>
+                    <span class="text-[11px] text-slate-500 hidden sm:inline">('법인카드 영수증 db' 스프레드시트와 실시간 자동 연동됩니다)</span>
                 </div>
-                <span id="resultCountBadge" class="text-xs bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full font-bold">총 0건</span>
+                <div class="flex items-center gap-2">
+                    <span id="loadingIndicator" class="hidden text-xs text-indigo-600 font-semibold items-center gap-1 bg-indigo-50 px-2.5 py-1 rounded-full animate-pulse">
+                        <i class="fa-solid fa-spinner fa-spin"></i> DB 로딩 중...
+                    </span>
+                    <span id="resultCountBadge" class="text-xs bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full font-bold">총 0건</span>
+                </div>
             </div>
             
             <!-- Desktop Table View -->
@@ -173,7 +197,7 @@
                             <th class="py-3.5 px-4">이용용도</th>
                             <th class="py-3.5 px-4 text-right">금액</th>
                             <th class="py-3.5 px-4 text-center">증빙 자료</th>
-                            <th class="py-3.5 px-4 text-center">동기화</th>
+                            <th class="py-3.5 px-4 text-center">드라이브 전송</th>
                             <th class="py-3.5 px-4 text-center">관리</th>
                         </tr>
                     </thead>
@@ -320,7 +344,7 @@
             <div class="bg-emerald-700 px-6 py-4 text-white flex justify-between items-center">
                 <div class="flex items-center gap-2">
                     <i class="fa-brands fa-google-drive text-amber-300 text-xl"></i>
-                    <h3 class="font-bold text-base sm:text-lg">구글 드라이브 폴더 연동 설정</h3>
+                    <h3 class="font-bold text-base sm:text-lg">구글 드라이브 실시간 자동 저장 설정</h3>
                 </div>
                 <button type="button" onclick="closeDriveSettingsModal()" class="text-emerald-200 hover:text-white transition">
                     <i class="fa-solid fa-xmark text-xl"></i>
@@ -330,62 +354,105 @@
             <div class="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar text-sm text-slate-700">
                 <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 space-y-2">
                     <div class="flex items-center gap-2 text-emerald-800 font-bold">
-                        <i class="fa-solid fa-folder-check"></i>
-                        <span>연동 지정 폴더</span>
+                        <i class="fa-solid fa-folder-open"></i>
+                        <span>저장 지정 폴더 안내</span>
                     </div>
                     <p class="text-xs text-emerald-700 break-all">
                         폴더 링크: <a href="https://drive.google.com/drive/folders/1_Z2iV8nVzn3Qf3-jSFv4altgJNEaOlah?usp=drive_link" target="_blank" rel="noopener noreferrer" class="underline font-semibold">1_Z2iV8nVzn3Qf3-jSFv4altgJNEaOlah</a>
                     </p>
                     <p class="text-[11px] text-emerald-600">
-                        * '엑셀저장' 클릭 시 <strong>'법인카드 영수증_YYYY-MM.xlsx'</strong> 파일로 즉시 다운로드되어 해당 폴더로 저장 및 동기화할 수 있습니다.
+                        * 연동 완료 시 <strong>영수증 사진 파일</strong>과 <strong>'법인카드 영수증_YYYY-MM' 스프레드시트</strong>가 이 폴더에 즉시 자동 생성됩니다.
                     </p>
                 </div>
 
                 <div class="space-y-2">
                     <label class="block text-xs font-bold text-slate-700 uppercase">
-                        ⚡ 구글 앱스 스크립트(Apps Script) Webhook URL (선택 사항)
+                        ⚡ 구글 웹앱(Apps Script Webhook) URL
                     </label>
-                    <input type="url" id="gasWebhookUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <input type="url" id="gasWebhookUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     <p class="text-[11px] text-slate-500 leading-relaxed">
-                        촬영한 영수증 사진과 지출 내역이 구글 드라이브 폴더로 실시간 자동 업로드되도록 만들고 싶으시면, 아래 간단한 구글 스크립트 배포 주소를 입력하세요.
+                        아래 가이드에 따라 발급받은 <span class="font-semibold text-slate-700">/exec</span> 로 끝나는 웹앱 URL을 입력하시면 연동이 즉시 완료됩니다.
                     </p>
                 </div>
 
-                <div class="border-t border-slate-200 pt-3">
-                    <details class="cursor-pointer group">
-                        <summary class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
-                            <i class="fa-solid fa-circle-question"></i> 구글 드라이브 완전 자동 저장 스크립트 1분 설정법 보기
-                        </summary>
-                        <div class="mt-3 p-3 bg-slate-50 rounded-xl text-xs space-y-2 border border-slate-200">
-                            <p>1. 구글 드라이브 폴더에서 <strong>새로 만들기 ➔ 더보기 ➔ Google Apps Script</strong>를 클릭합니다.</p>
-                            <p>2. 아래 코드를 복사해서 붙여넣고 상단의 <strong>[배포] ➔ [새 배포] ➔ 유형: 웹 앱</strong> (액세스: 모든 사용자)으로 배포합니다.</p>
-                            <div class="relative">
-                                <pre class="bg-slate-900 text-slate-200 p-3 rounded-lg overflow-x-auto text-[11px] leading-snug">
+                <div class="border-t border-slate-200 pt-3 space-y-2">
+                    <h5 class="text-xs font-bold text-indigo-700 flex items-center gap-1">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> 1분 만에 자동 연동 스크립트 만들기 (무료)
+                    </h5>
+                    <ol class="text-xs space-y-1.5 text-slate-600 list-decimal list-inside bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <li>구글 드라이브 폴더 화면에서 <strong>[+ 새로 만들기] ➔ [더보기] ➔ [Google Apps Script]</strong>를 클릭합니다.</li>
+                        <li>기존 코드를 지우고 아래 <strong>[스크립트 코드 복사]</strong> 버튼을 눌러 그대로 붙여넣습니다.</li>
+                        <li>우측 상단 <strong>[배포] ➔ [새 배포]</strong> 클릭 ➔ 유형: <strong>웹 앱</strong> 선택</li>
+                        <li>액세스 권한: <strong>모든 사용자(Anyone)</strong>로 선택 후 <strong>[배포]</strong> 클릭</li>
+                        <li>생성된 <strong>웹앱 URL</strong>을 복사하여 위 입력창에 넣고 <strong>[설정 저장]</strong>을 누르면 끝!</li>
+                    </ol>
+                    <div class="relative">
+                        <pre class="bg-slate-900 text-slate-200 p-3 rounded-lg overflow-x-auto text-[11px] leading-snug font-mono">
 function doPost(e) {
-  var data = JSON.parse(e.postData.contents);
-  var folder = DriveApp.getFolderById("1_Z2iV8nVzn3Qf3-jSFv4altgJNEaOlah");
-  if (data.receiptBase64) {
-    var split = data.receiptBase64.split(",");
-    var contentType = split[0].split(";")[0].replace("data:", "");
-    var decoded = Utilities.base64Decode(split[1]);
-    var blob = Utilities.newBlob(decoded, contentType, data.date + "_" + data.merchant + "_영수증.png");
-    folder.createFile(blob);
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var folder = DriveApp.getFolderById("1_Z2iV8nVzn3Qf3-jSFv4altgJNEaOlah");
+    
+    // 1. 영수증 사진 저장
+    var receiptUrl = "";
+    if (data.receipt) {
+      var split = data.receipt.split(",");
+      var contentType = split[0].split(";")[0].replace("data:", "");
+      var decoded = Utilities.base64Decode(split[1]);
+      var blob = Utilities.newBlob(decoded, contentType, data.date + "_" + data.merchant + "_영수증.jpg");
+      var file = folder.createFile(blob);
+      receiptUrl = file.getUrl();
+    }
+    
+    // 2. 거래명세서 사진 저장
+    var stmtUrl = "";
+    if (data.statement) {
+      var split2 = data.statement.split(",");
+      var contentType2 = split2[0].split(";")[0].replace("data:", "");
+      var decoded2 = Utilities.base64Decode(split2[1]);
+      var blob2 = Utilities.newBlob(decoded2, contentType2, data.date + "_" + data.merchant + "_명세서.jpg");
+      var file2 = folder.createFile(blob2);
+      stmtUrl = file2.getUrl();
+    }
+
+    // 3. '법인카드 영수증_YYYY-MM' 엑셀 시트 자동 생성 및 행 추가
+    var ym = data.date.substring(0, 7);
+    var fileName = "법인카드 영수증_" + ym;
+    var files = folder.getFilesByName(fileName);
+    var ss;
+    if (files.hasNext()) {
+      ss = SpreadsheetApp.open(files.next());
+    } else {
+      ss = SpreadsheetApp.create(fileName);
+      var ssFile = DriveApp.getFileById(ss.getId());
+      folder.addFile(ssFile);
+      DriveApp.getRootFolder().removeFile(ssFile);
+      var initSheet = ss.getActiveSheet();
+      initSheet.appendRow(["사용일자", "계정과목", "사용처", "이용용도", "결제금액", "영수증사진링크", "명세서링크", "저장일시"]);
+    }
+    var sheet = ss.getActiveSheet();
+    sheet.appendRow([data.date, data.account, data.merchant, data.purpose, data.amount, receiptUrl, stmtUrl, new Date().toLocaleString()]);
+
+    return ContentService.createTextOutput(JSON.stringify({status: "success", receiptUrl: receiptUrl})).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({status: "error", message: err.toString()})).setMimeType(ContentService.MimeType.JSON);
   }
-  return ContentService.createTextOutput(JSON.stringify({status: "success"})).setMimeType(ContentService.MimeType.JSON);
 }</pre>
-                                <button type="button" onclick="copyScriptCode()" class="absolute top-2 right-2 bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-1 rounded text-[10px]">
-                                    코드 복사
-                                </button>
-                            </div>
-                            <p>3. 생성된 웹앱 URL을 위 입력칸에 넣고 [설정 저장]을 누르면 완료됩니다!</p>
-                        </div>
-                    </details>
+                        <button type="button" onclick="copyScriptCode()" class="absolute top-2 right-2 bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-md text-xs font-bold shadow">
+                            <i class="fa-solid fa-copy mr-1"></i> 스크립트 코드 복사
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
-                <button type="button" onclick="closeDriveSettingsModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold">닫기</button>
-                <button type="button" onclick="saveDriveSettings()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow">설정 저장</button>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center gap-2">
+                <button type="button" onclick="syncAllToDrive()" class="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> 기존 내역 전체 전송
+                </button>
+                <div class="flex gap-2">
+                    <button type="button" onclick="closeDriveSettingsModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold">닫기</button>
+                    <button type="button" onclick="saveDriveSettings()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow">설정 저장</button>
+                </div>
             </div>
         </div>
     </div>
@@ -468,6 +535,7 @@ function doPost(e) {
         const STORAGE_KEY = "corp_card_expenses_v2";
         const SETTINGS_KEY = "corp_card_drive_settings";
         const API_KEY_STORAGE = "corp_card_gemini_api_key";
+        const DB_SHEET_NAME = "법인카드 영수증 db";
 
         // Safe storage helpers to avoid browser sandbox crashes
         function safeGetStorage(key, fallback = "") {
@@ -490,15 +558,15 @@ function doPost(e) {
         let expenses = [];
         let driveSettings = { webhookUrl: "" };
 
-        // Application Initialization
-        window.addEventListener('DOMContentLoaded', () => {
-            // Load Saved API Key
+        // Application Initialization: 1차 로컬 즉시 로딩 후 구글 드라이브 최신 데이터 자동 동기화
+        window.addEventListener('DOMContentLoaded', async () => {
+            // 1. Load Saved API Key
             if (apiKey) {
                 const keyInput = document.getElementById('userApiKeyInput');
                 if (keyInput) keyInput.value = apiKey;
             }
 
-            // Load Settings
+            // 2. Load Drive Settings
             const savedSettings = safeGetStorage(SETTINGS_KEY, "");
             if (savedSettings) {
                 try {
@@ -508,7 +576,7 @@ function doPost(e) {
                 } catch(e) {}
             }
 
-            // Load Expenses
+            // 3. 앱 열 때 마지막 저장된 데이터 즉시 로딩 (Offline / Instant Load)
             const savedData = safeGetStorage(STORAGE_KEY, "");
             if (savedData) {
                 try {
@@ -517,25 +585,53 @@ function doPost(e) {
                     expenses = [];
                 }
             } else {
-                expenses = [
-                    {
-                        id: 'exp_init_1',
-                        date: new Date().toISOString().split('T')[0],
-                        account: '복리후생비',
-                        merchant: '스타벅스 강남점',
-                        purpose: '팀 주간 회의 간식 및 음료 구입',
-                        amount: 18000,
-                        receipt: '',
-                        statement: '',
-                        synced: false
-                    }
-                ];
-                saveToStorage();
+                expenses = [];
             }
 
             renderTable(expenses);
             updateDriveSyncStatus();
+
+            // 4. 구글 드라이브 연동 URL이 설정되어 있으면 '법인카드 영수증 db' 최신 내역 자동 로딩 & 동기화
+            if (driveSettings.webhookUrl && driveSettings.webhookUrl.startsWith('http')) {
+                await fetchFromGoogleDrive(true);
+            }
         });
+
+        // 구글 드라이브 '법인카드 영수증 db'에서 최신 데이터 자동 불러오기
+        async function fetchFromGoogleDrive(isSilent = false) {
+            if (!driveSettings.webhookUrl || !driveSettings.webhookUrl.startsWith('http')) return;
+
+            const spinIcon = document.getElementById('syncSpinIcon');
+            const loader = document.getElementById('loadingIndicator');
+            if (spinIcon) spinIcon.classList.add('fa-spin');
+            if (loader) loader.classList.remove('hidden');
+
+            try {
+                const res = await fetch(driveSettings.webhookUrl);
+                if (!res.ok) throw new Error('Network response not ok');
+                const result = await res.json();
+
+                if (result && result.status === 'success' && Array.isArray(result.data)) {
+                    if (result.data.length > 0) {
+                        // 서버의 최신 데이터를 기반으로 병합 및 갱신
+                        expenses = result.data;
+                        saveToStorage();
+                        filterExpenses();
+                        if (!isSilent) {
+                            showToast(`'${DB_SHEET_NAME}'에서 최신 내역 ${result.data.length}건을 불러왔습니다!`, 'success');
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn('Google Drive auto-fetch error (CORS or network):', err);
+                if (!isSilent) {
+                    showToast('구글 드라이브 로딩 중 네트워크 오류가 발생했습니다. 저장된 마지막 내역을 유지합니다.');
+                }
+            } finally {
+                if (spinIcon) spinIcon.classList.remove('fa-spin');
+                if (loader) loader.classList.add('hidden');
+            }
+        }
 
         function openAiSettingsModal() {
             const keyInput = document.getElementById('userApiKeyInput');
@@ -611,11 +707,17 @@ function doPost(e) {
 
         function updateDriveSyncStatus() {
             const statusEl = document.getElementById('statSyncStatus');
+            const alertBanner = document.getElementById('driveAlertBanner');
             if (!statusEl) return;
-            if (driveSettings.webhookUrl) {
-                statusEl.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-emerald-500"></i> 자동 동기화 활성`;
+            
+            if (driveSettings.webhookUrl && driveSettings.webhookUrl.startsWith('http')) {
+                statusEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500"></i> '${DB_SHEET_NAME}' 자동 연동`;
+                statusEl.className = "text-xs sm:text-sm font-bold text-emerald-600 mt-2 flex items-center gap-1";
+                if (alertBanner) alertBanner.classList.add('hidden');
             } else {
-                statusEl.innerHTML = `<i class="fa-solid fa-file-excel text-indigo-500"></i> 엑셀 연동 준비`;
+                statusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-500"></i> 연동 설정 필요`;
+                statusEl.className = "text-xs sm:text-sm font-bold text-amber-600 mt-2 flex items-center gap-1";
+                if (alertBanner) alertBanner.classList.remove('hidden');
             }
         }
 
@@ -639,6 +741,7 @@ function doPost(e) {
                 if (emptyState) emptyState.classList.add('hidden');
             }
 
+            const isDriveConfigured = driveSettings.webhookUrl && driveSettings.webhookUrl.startsWith('http');
             const sorted = [...dataToRender].sort((a, b) => new Date(b.date) - new Date(a.date));
 
             sorted.forEach((item) => {
@@ -648,6 +751,13 @@ function doPost(e) {
                 else if (item.account === '접대비') badgeColor = 'bg-amber-100 text-amber-800';
                 else if (item.account === '소모품비') badgeColor = 'bg-purple-100 text-purple-800';
                 else if (item.account === '차량유지비') badgeColor = 'bg-cyan-100 text-cyan-800';
+
+                // Sync status indicator
+                const syncBadge = item.synced
+                    ? `<span class="text-xs text-emerald-600 font-bold flex items-center justify-center gap-1"><i class="fa-solid fa-circle-check"></i> 전송완료</span>`
+                    : (isDriveConfigured 
+                        ? `<button type="button" onclick="syncSingleEntryToDrive('${item.id}')" class="text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-2 py-1 rounded-lg font-bold transition flex items-center justify-center gap-1 mx-auto"><i class="fa-solid fa-cloud-arrow-up"></i> 드라이브 전송</button>`
+                        : `<span class="text-xs text-slate-400 font-medium flex items-center justify-center gap-1" title="드라이브 연동 주소 설정 필요"><i class="fa-solid fa-hard-drive"></i> 기기 저장</span>`);
 
                 // 1. Desktop Table Row
                 const tr = document.createElement('tr');
@@ -665,9 +775,7 @@ function doPost(e) {
                         </div>
                     </td>
                     <td class="py-3.5 px-4 text-center whitespace-nowrap">
-                        <span class="text-xs text-emerald-600 font-medium flex items-center justify-center gap-1">
-                            <i class="fa-brands fa-google-drive"></i> 동기화됨
-                        </span>
+                        ${syncBadge}
                     </td>
                     <td class="py-3.5 px-4 text-center whitespace-nowrap">
                         <div class="flex items-center justify-center gap-1">
@@ -692,6 +800,7 @@ function doPost(e) {
                         </div>
                         <div class="text-right">
                             <span class="text-base font-black text-indigo-600">${Number(item.amount).toLocaleString()} 원</span>
+                            <div class="mt-1">${syncBadge}</div>
                         </div>
                     </div>
                     <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs text-slate-700">
@@ -817,6 +926,7 @@ function doPost(e) {
                 amount: Number(document.getElementById('expenseAmount').value),
                 receipt: document.getElementById('receiptBase64').value,
                 statement: document.getElementById('statementBase64').value,
+                synced: false,
                 updatedAt: new Date().toISOString()
             };
 
@@ -826,19 +936,31 @@ function doPost(e) {
                 showToast('지출 내역이 수정되었습니다.', 'success');
             } else {
                 expenses.push(newEntry);
-                showToast('새 지출 내역이 안전하게 등록되었습니다!', 'success');
-            }
-
-            if (driveSettings.webhookUrl) {
-                syncSingleEntryToDrive(newEntry);
+                showToast('새 지출 내역이 등록되었습니다!', 'success');
             }
 
             saveToStorage();
             filterExpenses();
             closeModal();
+
+            // 구글 드라이브 '법인카드 영수증 db'로 자동 실시간 동기화
+            if (driveSettings.webhookUrl && driveSettings.webhookUrl.startsWith('http')) {
+                syncSingleEntryToDrive(newEntry.id);
+            } else {
+                showToast('기기에 저장되었습니다. 구글 드라이브 자동 저장을 원하시면 상단 [드라이브 연동]을 등록하세요.');
+            }
         }
 
-        async function syncSingleEntryToDrive(entry) {
+        async function syncSingleEntryToDrive(entryId) {
+            const entry = expenses.find(e => e.id === entryId);
+            if (!entry) return;
+
+            if (!driveSettings.webhookUrl || !driveSettings.webhookUrl.startsWith('http')) {
+                return;
+            }
+
+            showToast(`'${DB_SHEET_NAME}'로 자동 저장 중...`);
+
             try {
                 await fetch(driveSettings.webhookUrl, {
                     method: 'POST',
@@ -846,18 +968,43 @@ function doPost(e) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         folderId: "1_Z2iV8nVzn3Qf3-jSFv4altgJNEaOlah",
-                        ...entry,
-                        receiptBase64: entry.receipt
+                        ...entry
                     })
                 });
-                showToast('구글 드라이브 폴더로 전송되었습니다.', 'success');
+
+                entry.synced = true;
+                saveToStorage();
+                filterExpenses();
+                showToast(`'${DB_SHEET_NAME}'에 성공적으로 자동 저장되었습니다!`, 'success');
             } catch (err) {
                 console.warn('Drive sync error:', err);
             }
         }
+        // Excel Export ('법인카드 영수증 db.xlsx' 파일명으로 일치)
+        function exportToExcel() {
+            if (expenses.length === 0) {
+                showToast('내보낼 지출 내역이 없습니다.', 'error');
+                return;
+            }
 
-        function editExpense(id) {
-            openModal(id);
+            const exportData = expenses.map((item, idx) => ({
+                '번호': idx + 1,
+                '사용일자': item.date,
+                '계정과목': item.account,
+                '사용처': item.merchant,
+                '이용용도': item.purpose,
+                '결제금액': item.amount,
+                '영수증첨부여부': item.receipt ? '유' : '무',
+                '거래명세서첨부여부': item.statement ? '유' : '무'
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "법인카드영수증DB");
+
+            const fileName = `${DB_SHEET_NAME}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+            showToast(`'${fileName}' 다운로드 완료!`, 'success');
         }
 
         function deleteExpense(id) {
