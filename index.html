@@ -2,19 +2,24 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>법인카드 영수증 및 지출결의서 관리 앱</title>
-    <!-- Tailwind CSS for modern responsive styling -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>법인카드 영수증 및 지출결의서 관리</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for icons -->
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- SheetJS (xlsx) for Excel export/import support -->
+    <!-- SheetJS for Excel handling -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Pretendard', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        body { 
+            font-family: 'Pretendard', sans-serif; 
+            -webkit-tap-highlight-color: transparent; 
+            touch-action: manipulation;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        button, a, label { cursor: pointer; user-select: none; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
@@ -32,35 +37,35 @@
                     </div>
                     <div>
                         <h1 class="text-base sm:text-lg font-bold tracking-tight leading-tight">법인카드 영수증 & 지출결의서</h1>
-                        <p class="text-[11px] sm:text-xs text-indigo-200">구글 드라이브 연동 및 AI 영수증 자동인식</p>
+                        <p class="text-[11px] sm:text-xs text-indigo-200">구글 드라이브 연동 & AI 영수증 자동인식</p>
                     </div>
                 </div>
                 <!-- Drive Status on Mobile -->
-                <button type="button" onclick="openDriveSettingsModal()" class="sm:hidden text-xs bg-indigo-800/80 px-2.5 py-1.5 rounded-lg text-emerald-300 border border-indigo-600 flex items-center gap-1.5 cursor-pointer">
+                <button type="button" onclick="openDriveSettingsModal()" class="sm:hidden text-xs bg-indigo-800/90 hover:bg-indigo-800 px-2.5 py-1.5 rounded-lg text-emerald-300 border border-indigo-600 flex items-center gap-1">
                     <i class="fa-brands fa-google-drive"></i> 드라이브
                 </button>
             </div>
 
             <!-- Action Buttons Toolbar -->
             <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
-                <button type="button" onclick="openAiSettingsModal()" class="bg-purple-800/90 hover:bg-purple-700 text-white px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition shadow-sm flex items-center gap-1.5 border border-purple-500/60 cursor-pointer">
+                <button type="button" onclick="openAiSettingsModal()" class="bg-purple-800/90 hover:bg-purple-700 text-white px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition shadow-sm flex items-center gap-1.5 border border-purple-500/60">
                     <i class="fa-solid fa-key text-amber-300"></i> AI 키 설정
                 </button>
-                <button type="button" onclick="openDriveSettingsModal()" class="hidden sm:flex bg-indigo-800/90 hover:bg-indigo-800 text-white px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition shadow-sm flex items-center gap-1.5 border border-indigo-500/60 cursor-pointer">
+                <button type="button" onclick="openDriveSettingsModal()" class="hidden sm:flex bg-indigo-800/90 hover:bg-indigo-800 text-white px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition shadow-sm flex items-center gap-1.5 border border-indigo-500/60">
                     <i class="fa-brands fa-google-drive text-emerald-400"></i> 구글 드라이브 연동
                 </button>
-                <a href="https://drive.google.com/drive/folders/1_Z2iV8nVzn3Qf3-jSFv4altgJNEaOlah?usp=drive_link" target="_blank" rel="noopener noreferrer" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition shadow-sm flex items-center gap-1.5 border border-indigo-500 cursor-pointer">
-                    <i class="fa-solid fa-arrow-up-right-from-square text-amber-300"></i> <span class="hidden xs:inline">폴더 바로가기</span>
+                <a href="https://drive.google.com/drive/folders/1_Z2iV8nVzn3Qf3-jSFv4altgJNEaOlah?usp=drive_link" target="_blank" rel="noopener noreferrer" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition shadow-sm flex items-center gap-1.5 border border-indigo-500">
+                    <i class="fa-solid fa-arrow-up-right-from-square text-amber-300"></i> <span class="hidden xs:inline">폴더 열기</span>
                 </a>
-                <label for="importFile" class="cursor-pointer bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition shadow-sm flex items-center gap-1.5 border border-indigo-500">
+                <label for="importFile" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition shadow-sm flex items-center gap-1.5 border border-indigo-500">
                     <i class="fa-solid fa-file-excel text-emerald-300"></i> 불러오기
                 </label>
                 <input type="file" id="importFile" accept=".xlsx, .xls, .csv" class="hidden" onchange="importFromExcel(event)">
                 
-                <button type="button" onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition shadow-sm flex items-center gap-1.5 cursor-pointer">
+                <button type="button" onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition shadow-sm flex items-center gap-1.5">
                     <i class="fa-solid fa-download"></i> 엑셀저장
                 </button>
-                <button type="button" onclick="openModal()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition shadow-md flex items-center gap-1.5 cursor-pointer">
+                <button type="button" onclick="openModal()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition shadow-md flex items-center gap-1.5">
                     <i class="fa-solid fa-plus"></i> 새 지출등록
                 </button>
             </div>
@@ -100,7 +105,7 @@
             </div>
             <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
                 <div>
-                    <p class="text-[11px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">드라이브 동기화</p>
+                    <p class="text-[11px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">드라이브 연동</p>
                     <h3 id="statSyncStatus" class="text-xs sm:text-sm font-bold text-emerald-600 mt-2 flex items-center gap-1">
                         <i class="fa-solid fa-check-circle"></i> 준비 완료
                     </h3>
@@ -118,7 +123,7 @@
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                         <i class="fa-solid fa-search text-xs"></i>
                     </span>
-                    <input type="text" id="searchInput" onkeyup="filterExpenses()" placeholder="사용처, 용도 검색..." class="pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full">
+                    <input type="text" id="searchInput" oninput="filterExpenses()" placeholder="사용처, 용도 검색..." class="pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full">
                 </div>
                 <select id="filterAccount" onchange="filterExpenses()" class="py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-auto">
                     <option value="">모든 계정과목</option>
@@ -138,10 +143,10 @@
                 </div>
             </div>
             <div class="flex items-center gap-2 justify-end">
-                <button type="button" onclick="aiAnalyzeAllExpenses()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition shadow-sm flex items-center justify-center gap-1.5 flex-1 sm:flex-initial cursor-pointer">
+                <button type="button" onclick="aiAnalyzeAllExpenses()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition shadow-sm flex items-center justify-center gap-1.5 flex-1 sm:flex-initial">
                     ✨ AI 지출 분석
                 </button>
-                <button type="button" onclick="resetFilters()" class="text-xs sm:text-sm text-slate-500 hover:text-indigo-600 transition font-medium flex items-center gap-1 px-2.5 py-2 cursor-pointer">
+                <button type="button" onclick="resetFilters()" class="text-xs sm:text-sm text-slate-500 hover:text-indigo-600 transition font-medium flex items-center gap-1 px-2.5 py-2">
                     <i class="fa-solid fa-rotate-right"></i> 초기화
                 </button>
             </div>
@@ -152,7 +157,7 @@
             <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/60">
                 <div class="flex items-center gap-2">
                     <h3 class="font-bold text-slate-800 text-sm sm:text-base">지출 내역 목록</h3>
-                    <span class="text-[11px] text-slate-500 hidden sm:inline">('법인카드 영수증' 파일로 저장됩니다)</span>
+                    <span class="text-[11px] text-slate-500 hidden sm:inline">('법인카드 영수증_YYYY-MM.xlsx' 파일로 저장됩니다)</span>
                 </div>
                 <span id="resultCountBadge" class="text-xs bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full font-bold">총 0건</span>
             </div>
@@ -202,7 +207,7 @@
                     <i class="fa-solid fa-pen-to-square text-amber-300"></i>
                     <h3 id="modalTitle" class="font-bold text-base sm:text-lg">새 지출 내역 등록</h3>
                 </div>
-                <button type="button" onclick="closeModal()" class="text-indigo-200 hover:text-white transition p-1 cursor-pointer">
+                <button type="button" onclick="closeModal()" class="text-indigo-200 hover:text-white transition p-1">
                     <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
@@ -245,7 +250,7 @@
                 <div>
                     <div class="flex justify-between items-center mb-1">
                         <label class="block text-xs font-semibold text-slate-600 uppercase">이용용도 상세 *</label>
-                        <button type="button" onclick="aiEnhancePurpose()" class="text-xs text-purple-600 hover:text-purple-700 font-bold flex items-center gap-1 cursor-pointer">
+                        <button type="button" onclick="aiEnhancePurpose()" class="text-xs text-purple-600 hover:text-purple-700 font-bold flex items-center gap-1">
                             ✨ AI 문구 다듬기
                         </button>
                     </div>
@@ -267,7 +272,7 @@
                         </div>
                         <div id="receiptPreviewContainer" class="hidden relative z-20">
                             <img id="receiptPreview" src="" alt="영수증 미리보기" class="h-24 mx-auto object-contain rounded-lg border border-slate-200">
-                            <button type="button" onclick="removeImage('receipt')" class="absolute -top-2 -right-2 bg-rose-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow hover:bg-rose-700 cursor-pointer">
+                            <button type="button" onclick="removeImage('receipt')" class="absolute -top-2 -right-2 bg-rose-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow hover:bg-rose-700">
                                 <i class="fa-solid fa-xmark"></i>
                             </button>
                         </div>
@@ -286,7 +291,7 @@
                         </div>
                         <div id="statementPreviewContainer" class="hidden relative z-20">
                             <img id="statementPreview" src="" alt="거래명세서 미리보기" class="h-24 mx-auto object-contain rounded-lg border border-slate-200">
-                            <button type="button" onclick="removeImage('statement')" class="absolute -top-2 -right-2 bg-rose-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow hover:bg-rose-700 cursor-pointer">
+                            <button type="button" onclick="removeImage('statement')" class="absolute -top-2 -right-2 bg-rose-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow hover:bg-rose-700">
                                 <i class="fa-solid fa-xmark"></i>
                             </button>
                         </div>
@@ -295,12 +300,12 @@
 
                 <!-- Action Footer Buttons -->
                 <div class="pt-4 flex flex-col sm:flex-row justify-between items-center gap-3 border-t border-slate-100">
-                    <button id="btnAiReceiptOcr" type="button" onclick="aiAnalyzeReceipt()" class="w-full sm:w-auto px-3.5 py-2.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer">
+                    <button id="btnAiReceiptOcr" type="button" onclick="aiAnalyzeReceipt()" class="w-full sm:w-auto px-3.5 py-2.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
                         ✨ 영수증 AI 자동 인식
                     </button>
                     <div class="flex gap-2 w-full sm:w-auto justify-end">
-                        <button type="button" onclick="closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition flex-1 sm:flex-initial cursor-pointer">취소</button>
-                        <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-bold transition shadow-md flex-1 sm:flex-initial cursor-pointer">
+                        <button type="button" onclick="closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition flex-1 sm:flex-initial">취소</button>
+                        <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-bold transition shadow-md flex-1 sm:flex-initial">
                             <i class="fa-solid fa-cloud-arrow-up mr-1"></i> 저장하기
                         </button>
                     </div>
@@ -317,7 +322,7 @@
                     <i class="fa-brands fa-google-drive text-amber-300 text-xl"></i>
                     <h3 class="font-bold text-base sm:text-lg">구글 드라이브 폴더 연동 설정</h3>
                 </div>
-                <button type="button" onclick="closeDriveSettingsModal()" class="text-emerald-200 hover:text-white transition cursor-pointer">
+                <button type="button" onclick="closeDriveSettingsModal()" class="text-emerald-200 hover:text-white transition">
                     <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
@@ -338,11 +343,11 @@
 
                 <div class="space-y-2">
                     <label class="block text-xs font-bold text-slate-700 uppercase">
-                        ⚡ 구글 앱스 스크립트(Apps Script) 자동 전송 Webhook URL (선택 사항)
+                        ⚡ 구글 앱스 스크립트(Apps Script) Webhook URL (선택 사항)
                     </label>
                     <input type="url" id="gasWebhookUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     <p class="text-[11px] text-slate-500 leading-relaxed">
-                        모바일에서 촬영한 영수증 사진과 지출 내역이 구글 드라이브 폴더로 실시간 자동 업로드되도록 만들고 싶으시면, 아래 간단한 구글 스크립트 배포 주소를 입력하세요.
+                        촬영한 영수증 사진과 지출 내역이 구글 드라이브 폴더로 실시간 자동 업로드되도록 만들고 싶으시면, 아래 간단한 구글 스크립트 배포 주소를 입력하세요.
                     </p>
                 </div>
 
@@ -368,7 +373,7 @@ function doPost(e) {
   }
   return ContentService.createTextOutput(JSON.stringify({status: "success"})).setMimeType(ContentService.MimeType.JSON);
 }</pre>
-                                <button type="button" onclick="copyScriptCode()" class="absolute top-2 right-2 bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-1 rounded text-[10px] cursor-pointer">
+                                <button type="button" onclick="copyScriptCode()" class="absolute top-2 right-2 bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-1 rounded text-[10px]">
                                     코드 복사
                                 </button>
                             </div>
@@ -379,8 +384,8 @@ function doPost(e) {
             </div>
 
             <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
-                <button type="button" onclick="closeDriveSettingsModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer">닫기</button>
-                <button type="button" onclick="saveDriveSettings()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow cursor-pointer">설정 저장</button>
+                <button type="button" onclick="closeDriveSettingsModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold">닫기</button>
+                <button type="button" onclick="saveDriveSettings()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow">설정 저장</button>
             </div>
         </div>
     </div>
@@ -390,7 +395,7 @@ function doPost(e) {
         <div class="bg-white rounded-3xl p-4 max-w-2xl w-full max-h-[92vh] flex flex-col relative" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center mb-3">
                 <h4 id="imageModalTitle" class="font-bold text-slate-800 text-sm sm:text-base">증빙 자료 확인</h4>
-                <button type="button" onclick="closeImageModal()" class="text-slate-400 hover:text-slate-700 p-1 text-xl cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" onclick="closeImageModal()" class="text-slate-400 hover:text-slate-700 p-1 text-xl"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="flex-grow overflow-auto flex items-center justify-center bg-slate-950 rounded-2xl p-2 min-h-[300px]">
                 <img id="modalFullImage" src="" alt="증빙 원본 이미지" class="max-h-[75vh] w-auto object-contain rounded-lg">
@@ -406,7 +411,7 @@ function doPost(e) {
                     <i class="fa-solid fa-wand-magic-sparkles text-amber-300 text-lg"></i>
                     <h3 class="font-bold text-base sm:text-lg">Gemini AI 무료 키 설정</h3>
                 </div>
-                <button type="button" onclick="closeAiSettingsModal()" class="text-purple-200 hover:text-white transition cursor-pointer">
+                <button type="button" onclick="closeAiSettingsModal()" class="text-purple-200 hover:text-white transition">
                     <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
@@ -434,8 +439,8 @@ function doPost(e) {
                 </div>
             </div>
             <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
-                <button type="button" onclick="closeAiSettingsModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer">취소</button>
-                <button type="button" onclick="saveAiApiKey()" class="px-5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold shadow cursor-pointer">저장 완료</button>
+                <button type="button" onclick="closeAiSettingsModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold">취소</button>
+                <button type="button" onclick="saveAiApiKey()" class="px-5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold shadow">저장 완료</button>
             </div>
         </div>
     </div>
@@ -445,7 +450,7 @@ function doPost(e) {
         <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
             <div class="bg-gradient-to-r from-purple-700 to-indigo-700 px-6 py-4 text-white flex justify-between items-center">
                 <h3 class="font-bold text-base sm:text-lg flex items-center gap-2">✨ Gemini AI 지출 인사이트</h3>
-                <button type="button" onclick="closeAiModal()" class="text-purple-200 hover:text-white transition cursor-pointer">
+                <button type="button" onclick="closeAiModal()" class="text-purple-200 hover:text-white transition">
                     <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
@@ -453,7 +458,7 @@ function doPost(e) {
                 <!-- Analysis Content -->
             </div>
             <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
-                <button type="button" onclick="closeAiModal()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-bold transition cursor-pointer">확인</button>
+                <button type="button" onclick="closeAiModal()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-bold transition">확인</button>
             </div>
         </div>
     </div>
@@ -464,7 +469,24 @@ function doPost(e) {
         const SETTINGS_KEY = "corp_card_drive_settings";
         const API_KEY_STORAGE = "corp_card_gemini_api_key";
 
-        let apiKey = localStorage.getItem(API_KEY_STORAGE) || "";
+        // Safe storage helpers to avoid browser sandbox crashes
+        function safeGetStorage(key, fallback = "") {
+            try {
+                return localStorage.getItem(key) || fallback;
+            } catch (e) {
+                return fallback;
+            }
+        }
+
+        function safeSetStorage(key, value) {
+            try {
+                localStorage.setItem(key, value);
+            } catch (e) {
+                console.warn('Storage write skipped:', e);
+            }
+        }
+
+        let apiKey = safeGetStorage(API_KEY_STORAGE, "");
         let expenses = [];
         let driveSettings = { webhookUrl: "" };
 
@@ -477,7 +499,7 @@ function doPost(e) {
             }
 
             // Load Settings
-            const savedSettings = localStorage.getItem(SETTINGS_KEY);
+            const savedSettings = safeGetStorage(SETTINGS_KEY, "");
             if (savedSettings) {
                 try {
                     driveSettings = JSON.parse(savedSettings);
@@ -487,7 +509,7 @@ function doPost(e) {
             }
 
             // Load Expenses
-            const savedData = localStorage.getItem(STORAGE_KEY);
+            const savedData = safeGetStorage(STORAGE_KEY, "");
             if (savedData) {
                 try {
                     expenses = JSON.parse(savedData);
@@ -532,13 +554,14 @@ function doPost(e) {
                 return;
             }
             apiKey = inputVal;
-            localStorage.setItem(API_KEY_STORAGE, apiKey);
+            safeSetStorage(API_KEY_STORAGE, apiKey);
             closeAiSettingsModal();
             showToast('Gemini AI 키가 성공적으로 저장되었습니다!', 'success');
         }
 
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
+            if (!container) return;
             const toast = document.createElement('div');
             
             let bg = 'bg-slate-800 text-white';
@@ -566,7 +589,7 @@ function doPost(e) {
         }
 
         function saveToStorage() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
+            safeSetStorage(STORAGE_KEY, JSON.stringify(expenses));
             updateDashboardStats();
         }
 
@@ -575,14 +598,20 @@ function doPost(e) {
             const totalAmount = expenses.reduce((sum, item) => sum + Number(item.amount || 0), 0);
             const receiptCount = expenses.filter(item => item.receipt && item.receipt.length > 0).length;
 
-            document.getElementById('statTotalCount').innerText = `${totalCount} 건`;
-            document.getElementById('statTotalAmount').innerText = `${totalAmount.toLocaleString()} 원`;
-            document.getElementById('statReceiptCount').innerText = `${receiptCount} 건`;
-            document.getElementById('resultCountBadge').innerText = `총 ${totalCount}건`;
+            const statCountEl = document.getElementById('statTotalCount');
+            const statAmountEl = document.getElementById('statTotalAmount');
+            const statReceiptEl = document.getElementById('statReceiptCount');
+            const resultBadgeEl = document.getElementById('resultCountBadge');
+
+            if (statCountEl) statCountEl.innerText = `${totalCount} 건`;
+            if (statAmountEl) statAmountEl.innerText = `${totalAmount.toLocaleString()} 원`;
+            if (statReceiptEl) statReceiptEl.innerText = `${receiptCount} 건`;
+            if (resultBadgeEl) resultBadgeEl.innerText = `총 ${totalCount}건`;
         }
 
         function updateDriveSyncStatus() {
             const statusEl = document.getElementById('statSyncStatus');
+            if (!statusEl) return;
             if (driveSettings.webhookUrl) {
                 statusEl.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-emerald-500"></i> 자동 동기화 활성`;
             } else {
@@ -594,18 +623,20 @@ function doPost(e) {
             const tbody = document.getElementById('expenseTableBody');
             const cardContainer = document.getElementById('expenseCardContainer');
             const emptyState = document.getElementById('emptyState');
+            if (!tbody || !cardContainer) return;
             
             tbody.innerHTML = '';
             cardContainer.innerHTML = '';
 
-            document.getElementById('resultCountBadge').innerText = `총 ${dataToRender.length}건`;
+            const resultBadgeEl = document.getElementById('resultCountBadge');
+            if (resultBadgeEl) resultBadgeEl.innerText = `총 ${dataToRender.length}건`;
 
             if (dataToRender.length === 0) {
-                emptyState.classList.remove('hidden');
+                if (emptyState) emptyState.classList.remove('hidden');
                 updateDashboardStats();
                 return;
             } else {
-                emptyState.classList.add('hidden');
+                if (emptyState) emptyState.classList.add('hidden');
             }
 
             const sorted = [...dataToRender].sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -629,8 +660,8 @@ function doPost(e) {
                     <td class="py-3.5 px-4 text-right font-extrabold text-slate-800 whitespace-nowrap">${Number(item.amount).toLocaleString()} 원</td>
                     <td class="py-3.5 px-4 text-center whitespace-nowrap">
                         <div class="flex items-center justify-center gap-1.5">
-                            ${item.receipt ? `<button type="button" onclick="viewImage('${item.receipt}', '영수증')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-2.5 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1 cursor-pointer"><i class="fa-solid fa-receipt"></i> 영수증</button>` : `<span class="text-slate-300 text-xs">-</span>`}
-                            ${item.statement ? `<button type="button" onclick="viewImage('${item.statement}', '거래명세서')" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-2.5 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1 cursor-pointer"><i class="fa-solid fa-file-invoice"></i> 명세서</button>` : `<span class="text-slate-300 text-xs">-</span>`}
+                            ${item.receipt ? `<button type="button" onclick="viewImage('${item.receipt}', '영수증')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-2.5 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1"><i class="fa-solid fa-receipt"></i> 영수증</button>` : `<span class="text-slate-300 text-xs">-</span>`}
+                            ${item.statement ? `<button type="button" onclick="viewImage('${item.statement}', '거래명세서')" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-2.5 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1"><i class="fa-solid fa-file-invoice"></i> 명세서</button>` : `<span class="text-slate-300 text-xs">-</span>`}
                         </div>
                     </td>
                     <td class="py-3.5 px-4 text-center whitespace-nowrap">
@@ -640,8 +671,8 @@ function doPost(e) {
                     </td>
                     <td class="py-3.5 px-4 text-center whitespace-nowrap">
                         <div class="flex items-center justify-center gap-1">
-                            <button type="button" onclick="editExpense('${item.id}')" class="p-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg text-slate-600 transition cursor-pointer" title="수정"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <button type="button" onclick="deleteExpense('${item.id}')" class="p-1.5 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-slate-600 transition cursor-pointer" title="삭제"><i class="fa-solid fa-trash text-xs"></i></button>
+                            <button type="button" onclick="editExpense('${item.id}')" class="p-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg text-slate-600 transition" title="수정"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button type="button" onclick="deleteExpense('${item.id}')" class="p-1.5 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-slate-600 transition" title="삭제"><i class="fa-solid fa-trash text-xs"></i></button>
                         </div>
                     </td>
                 `;
@@ -668,13 +699,13 @@ function doPost(e) {
                     </div>
                     <div class="flex justify-between items-center pt-1">
                         <div class="flex items-center gap-1.5">
-                            ${item.receipt ? `<button type="button" onclick="viewImage('${item.receipt}', '영수증')" class="bg-indigo-50 text-indigo-600 px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer"><i class="fa-solid fa-receipt"></i> 영수증</button>` : ``}
-                            ${item.statement ? `<button type="button" onclick="viewImage('${item.statement}', '거래명세서')" class="bg-blue-50 text-blue-600 px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer"><i class="fa-solid fa-file-invoice"></i> 명세서</button>` : ``}
+                            ${item.receipt ? `<button type="button" onclick="viewImage('${item.receipt}', '영수증')" class="bg-indigo-50 text-indigo-600 px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1"><i class="fa-solid fa-receipt"></i> 영수증</button>` : ``}
+                            ${item.statement ? `<button type="button" onclick="viewImage('${item.statement}', '거래명세서')" class="bg-blue-50 text-blue-600 px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1"><i class="fa-solid fa-file-invoice"></i> 명세서</button>` : ``}
                             ${!item.receipt && !item.statement ? `<span class="text-slate-400 text-xs italic">증빙 없음</span>` : ``}
                         </div>
                         <div class="flex items-center gap-1.5">
-                            <button type="button" onclick="editExpense('${item.id}')" class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg text-xs text-slate-600 font-semibold transition cursor-pointer">수정</button>
-                            <button type="button" onclick="deleteExpense('${item.id}')" class="px-3 py-1.5 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-xs text-slate-600 font-semibold transition cursor-pointer">삭제</button>
+                            <button type="button" onclick="editExpense('${item.id}')" class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg text-xs text-slate-600 font-semibold transition">수정</button>
+                            <button type="button" onclick="deleteExpense('${item.id}')" class="px-3 py-1.5 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-xs text-slate-600 font-semibold transition">삭제</button>
                         </div>
                     </div>
                 `;
@@ -741,7 +772,7 @@ function doPost(e) {
 
         function saveDriveSettings() {
             driveSettings.webhookUrl = document.getElementById('gasWebhookUrl').value.trim();
-            localStorage.setItem(SETTINGS_KEY, JSON.stringify(driveSettings));
+            safeSetStorage(SETTINGS_KEY, JSON.stringify(driveSettings));
             updateDriveSyncStatus();
             closeDriveSettingsModal();
             showToast('구글 드라이브 연동 설정이 저장되었습니다!', 'success');
@@ -872,8 +903,8 @@ function doPost(e) {
                     const img = new Image();
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 1600;
-                        const MAX_HEIGHT = 1600;
+                        const MAX_WIDTH = 1400;
+                        const MAX_HEIGHT = 1400;
                         let width = img.width;
                         let height = img.height;
 
@@ -894,7 +925,7 @@ function doPost(e) {
                         const ctx = canvas.getContext('2d');
                         ctx.filter = 'contrast(1.08) brightness(1.02)';
                         ctx.drawImage(img, 0, 0, width, height);
-                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.90);
+                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.88);
 
                         document.getElementById(base64InputId).value = compressedBase64;
                         document.getElementById(previewId).src = compressedBase64;
@@ -943,4 +974,339 @@ function doPost(e) {
             document.getElementById('aiModal').classList.add('hidden');
         }
 
-        // 날짜 형식 표준화 함수 (2026.09.03, 26/09/03 등을 2026-09
+        function sanitizeDate(dateStr) {
+            if (!dateStr) return new Date().toISOString().split('T')[0];
+            let cleaned = String(dateStr).trim()
+                .replace(/년|월/g, '-')
+                .replace(/일/g, '')
+                .replace(/[\.\/]/g, '-')
+                .replace(/\s+/g, '');
+            const parts = cleaned.split('-').filter(Boolean);
+            if (parts.length >= 3) {
+                let y = parts[0];
+                let m = parts[1].padStart(2, '0');
+                let d = parts[2].padStart(2, '0');
+                if (y.length === 2) y = '20' + y;
+                return `${y}-${m}-${d}`;
+            }
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function sanitizeAmount(val) {
+            if (typeof val === 'number') return Math.round(val);
+            if (!val) return 0;
+            const digits = String(val).replace(/[^0-9]/g, '');
+            return digits ? parseInt(digits, 10) : 0;
+        }
+
+        function highlightInput(el) {
+            if (!el) return;
+            el.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50', 'transition-all', 'duration-300');
+            setTimeout(() => {
+                el.classList.remove('ring-2', 'ring-emerald-500', 'bg-emerald-50');
+            }, 1800);
+        }
+
+        async function callGeminiAPI(payload, retries = 3, delay = 1000) {
+            const currentKey = apiKey || "";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${currentKey}`;
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    if (response.status === 429 && retries > 0) {
+                        await new Promise(res => setTimeout(res, delay));
+                        return callGeminiAPI(payload, retries - 1, delay * 2);
+                    }
+                    if (response.status === 400 || response.status === 403) {
+                        const errData = await response.json().catch(() => ({}));
+                        if (!currentKey || (errData.error?.message && errData.error.message.includes('API key'))) {
+                            openAiSettingsModal();
+                            throw new Error('API 키 확인이 필요합니다. 상단 [AI 키 설정]에서 발급받은 무료 키를 등록해주세요.');
+                        }
+                        throw new Error(`API 오류 (${response.status}): ${errData.error?.message || '호출 실패'}`);
+                    }
+                    throw new Error(`API 오류 (${response.status})`);
+                }
+                const result = await response.json();
+                return result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            } catch (error) {
+                if (error.message.includes('API 키')) {
+                    throw error;
+                }
+                if (retries > 0) {
+                    await new Promise(res => setTimeout(res, delay));
+                    return callGeminiAPI(payload, retries - 1, delay * 2);
+                }
+                throw error;
+            }
+        }
+
+        async function aiAnalyzeReceipt() {
+            const receiptBase64 = document.getElementById('receiptBase64').value;
+            if (!receiptBase64) {
+                showToast('먼저 영수증 사진을 업로드해주세요!', 'error');
+                return;
+            }
+
+            const base64Data = receiptBase64.split(',')[1];
+            if (!base64Data) {
+                showToast('유효하지 않은 이미지 파일입니다.', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('btnAiReceiptOcr');
+            const originalText = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> AI 판독 중...`;
+                btn.disabled = true;
+            }
+
+            const prompt = `대한민국 법인카드 영수증 이미지를 정밀 분석하여 아래 항목을 추출하세요.
+1. date: 승인일시/거래일자 (YYYY-MM-DD 형식)
+2. merchant: 가맹점 상호명
+3. amount: 최종 실결제 승인 합계금액 (순수 정수 숫자)
+4. account: 복리후생비, 여비교통비, 접대비, 소모품비, 차량유지비, 통신비, 도서인쇄비, 기타비용 중 하나
+5. purpose: 구매 품목과 상호명을 고려한 간결한 이용용도 문구`;
+
+            const payload = {
+                contents: [
+                    {
+                        role: "user",
+                        parts: [
+                            { text: prompt },
+                            { inlineData: { mimeType: "image/jpeg", data: base64Data } }
+                        ]
+                    }
+                ],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            "date": { "type": "STRING", "description": "YYYY-MM-DD" },
+                            "merchant": { "type": "STRING" },
+                            "amount": { "type": "INTEGER", "description": "최종 결제 금액 숫자" },
+                            "account": { "type": "STRING" },
+                            "purpose": { "type": "STRING" }
+                        },
+                        required: ["date", "merchant", "amount", "account"]
+                    }
+                }
+            };
+
+            try {
+                const responseText = await callGeminiAPI(payload);
+                const cleanJson = responseText.replace(/```json/gi, '').replace(/```/gi, '').trim();
+                const parsed = JSON.parse(cleanJson);
+                
+                const dateEl = document.getElementById('expenseDate');
+                const merchantEl = document.getElementById('expenseMerchant');
+                const amountEl = document.getElementById('expenseAmount');
+                const accountEl = document.getElementById('expenseAccount');
+                const purposeEl = document.getElementById('expensePurpose');
+
+                const finalDate = sanitizeDate(parsed.date);
+                if (finalDate) {
+                    dateEl.value = finalDate;
+                    highlightInput(dateEl);
+                }
+
+                if (parsed.merchant) {
+                    merchantEl.value = String(parsed.merchant).trim();
+                    highlightInput(merchantEl);
+                }
+
+                const finalAmount = sanitizeAmount(parsed.amount);
+                if (finalAmount > 0) {
+                    amountEl.value = finalAmount;
+                    highlightInput(amountEl);
+                }
+
+                if (parsed.account) {
+                    const matchedAccount = String(parsed.account).trim();
+                    const availableOptions = Array.from(accountEl.options).map(opt => opt.value);
+                    if (availableOptions.includes(matchedAccount)) {
+                        accountEl.value = matchedAccount;
+                    } else if (matchedAccount.includes('식') || matchedAccount.includes('음료') || matchedAccount.includes('카페')) {
+                        accountEl.value = '복리후생비';
+                    } else if (matchedAccount.includes('택시') || matchedAccount.includes('교통')) {
+                        accountEl.value = '여비교통비';
+                    } else {
+                        accountEl.value = '기타비용';
+                    }
+                    highlightInput(accountEl);
+                }
+
+                if (parsed.purpose) {
+                    purposeEl.value = String(parsed.purpose).trim();
+                    highlightInput(purposeEl);
+                } else if (parsed.merchant) {
+                    purposeEl.value = `${merchantEl.value} ${accountEl.value || '이용'}`;
+                    highlightInput(purposeEl);
+                }
+
+                showToast(`✨ 영수증 판독 완료! 사용일자, 사용처, 금액이 자동 입력되었습니다.`, 'success');
+            } catch (error) {
+                console.error('OCR Error:', error);
+                if (error.message && error.message.includes('API 키')) {
+                    showToast(error.message, 'error');
+                } else {
+                    showToast('영수증 판독 중 오류가 발생했습니다. 사진을 다시 확인해주세요.', 'error');
+                }
+            } finally {
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        async function aiEnhancePurpose() {
+            const currentPurpose = document.getElementById('expensePurpose').value;
+            const merchant = document.getElementById('expenseMerchant').value;
+            const account = document.getElementById('expenseAccount').value;
+
+            if (!currentPurpose && !merchant) {
+                showToast('사용처나 이용용도를 먼저 입력해주세요.', 'error');
+                return;
+            }
+
+            const prompt = `법인카드 지출결의서에 들어갈 이용용도 문구를 전문적이고 명확한 회계 용도로 다듬어줘.
+사용처: ${merchant}
+계정과목: ${account}
+기존 메모: ${currentPurpose}
+50자 이내의 간결하고 정중한 한 문장으로 답변해줘. (다른 설명 없이 다듬어진 문구만 출력)`;
+
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }]
+            };
+
+            try {
+                const text = await callGeminiAPI(payload);
+                if (text) {
+                    document.getElementById('expensePurpose').value = text.trim();
+                    showToast('용도 문구가 보기 좋게 다듬어졌습니다!', 'success');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('AI 다듬기 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        async function aiAnalyzeAllExpenses() {
+            if (expenses.length === 0) {
+                showToast('분석할 지출 데이터가 없습니다.', 'error');
+                return;
+            }
+
+            const summaryJson = JSON.stringify(expenses.map(e => ({
+                날짜: e.date,
+                계정: e.account,
+                가맹점: e.merchant,
+                용도: e.purpose,
+                금액: e.amount
+            })));
+
+            const prompt = `다음은 회사의 법인카드 지출 내역 리스트야. 이 데이터를 바탕으로 지출 패턴을 분석하고 회계 감사 관점에서 피드백 및 절감 제안, 요약 리포트를 보기 좋게 한국어로 작성해줘.
+데이터: ${summaryJson}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }]
+            };
+
+            document.getElementById('aiModalContent').innerHTML = `<div class="text-center py-8"><i class="fa-solid fa-spinner fa-spin text-3xl text-indigo-600 mb-2"></i><p class="font-medium text-slate-600">Gemini AI가 지출 데이터를 정밀 분석하고 있습니다...</p></div>`;
+            document.getElementById('aiModal').classList.remove('hidden');
+
+            try {
+                const text = await callGeminiAPI(payload);
+                document.getElementById('aiModalContent').innerHTML = `<div class="whitespace-pre-line">${escapeHtml(text)}</div>`;
+            } catch (err) {
+                console.error(err);
+                document.getElementById('aiModalContent').innerHTML = `<p class="text-rose-600 font-semibold">지출 분석 리포트를 생성하는 중 오류가 발생했습니다.</p>`;
+            }
+        }
+
+        // Excel Export ('법인카드 영수증_YYYY-MM.xlsx' 파일명)
+        function exportToExcel() {
+            if (expenses.length === 0) {
+                showToast('내보낼 지출 내역이 없습니다.', 'error');
+                return;
+            }
+
+            const exportData = expenses.map((item, idx) => ({
+                '번호': idx + 1,
+                '사용일자': item.date,
+                '계정과목': item.account,
+                '사용처': item.merchant,
+                '이용용도': item.purpose,
+                '결제금액': item.amount,
+                '영수증첨부여부': item.receipt ? '유' : '무',
+                '거래명세서첨부여부': item.statement ? '유' : '무'
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "지출결의내역");
+
+            const now = new Date();
+            const yearMonth = now.toISOString().slice(0, 7);
+            const fileName = `법인카드 영수증_${yearMonth}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+            showToast(`'${fileName}' 다운로드 완료! 구글 드라이브 폴더에 동기화하세요.`, 'success');
+        }
+
+        // Excel Import
+        function importFromExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet);
+
+                    if (json.length === 0) {
+                        showToast('엑셀 파일에 데이터가 비어있습니다.', 'error');
+                        return;
+                    }
+
+                    const imported = json.map((row, index) => ({
+                        id: 'imp_' + Date.now() + '_' + index,
+                        date: row['사용일자'] || row['Date'] || new Date().toISOString().split('T')[0],
+                        account: row['계정과목'] || '기타비용',
+                        merchant: row['사용처'] || '미상',
+                        purpose: row['이용용도'] || '',
+                        amount: Number(row['결제금액'] || row['금액'] || 0),
+                        receipt: '',
+                        statement: ''
+                    }));
+
+                    expenses = [...expenses, ...imported];
+                    saveToStorage();
+                    renderTable(expenses);
+                    showToast(`엑셀 파일에서 ${imported.length}건을 성공적으로 불러왔습니다!`, 'success');
+                } catch (err) {
+                    console.error(err);
+                    showToast('엑셀 파일을 읽는 중 오류가 발생했습니다. 양식을 확인해주세요.', 'error');
+                } finally {
+                    event.target.value = '';
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
