@@ -176,11 +176,11 @@
             <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/60">
                 <div class="flex items-center gap-2">
                     <h3 class="font-bold text-slate-800 text-sm sm:text-base">지출 내역 목록</h3>
-                    <span class="text-[11px] text-slate-500 hidden sm:inline">('법인카드 영수증 db' 스프레드시트와 실시간 자동 연동됩니다)</span>
+                    <span class="text-[11px] text-emerald-700 font-semibold hidden sm:inline"><i class="fa-solid fa-cloud-check text-emerald-500 mr-1"></i>(구글 드라이브에 저장 완료된 내역만 안전하게 로딩됩니다)</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <span id="loadingIndicator" class="hidden text-xs text-indigo-600 font-semibold items-center gap-1 bg-indigo-50 px-2.5 py-1 rounded-full animate-pulse">
-                        <i class="fa-solid fa-spinner fa-spin"></i> DB 로딩 중...
+                        <i class="fa-solid fa-spinner fa-spin"></i> 구글 드라이브 동기화 중...
                     </span>
                     <span id="resultCountBadge" class="text-xs bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full font-bold">총 0건</span>
                 </div>
@@ -576,11 +576,14 @@ function doPost(e) {
                 } catch(e) {}
             }
 
-            // 3. 앱 열 때 마지막 저장된 데이터 즉시 로딩 (Offline / Instant Load)
+            // 3. 앱 열 때: 구글 드라이브에 저장 완료(synced: true)된 데이터만 선별 로딩 (미저장 내역은 로딩 제외)
             const savedData = safeGetStorage(STORAGE_KEY, "");
             if (savedData) {
                 try {
-                    expenses = JSON.parse(savedData);
+                    const parsed = JSON.parse(savedData);
+                    // 구글 드라이브에 저장되지 않은 내역은 로딩하지 않음
+                    expenses = Array.isArray(parsed) ? parsed.filter(item => item && item.synced === true) : [];
+                    saveToStorage();
                 } catch(e) {
                     expenses = [];
                 }
@@ -612,20 +615,21 @@ function doPost(e) {
                 const result = await res.json();
 
                 if (result && result.status === 'success' && Array.isArray(result.data)) {
-                    if (result.data.length > 0) {
-                        // 서버의 최신 데이터를 기반으로 병합 및 갱신
-                        expenses = result.data;
-                        saveToStorage();
-                        filterExpenses();
-                        if (!isSilent) {
-                            showToast(`'${DB_SHEET_NAME}'에서 최신 내역 ${result.data.length}건을 불러왔습니다!`, 'success');
-                        }
+                    // 구글 드라이브 '법인카드 영수증 db'에 실제로 저장된 내역만 엄격하게 로딩
+                    expenses = result.data.map(item => ({
+                        ...item,
+                        synced: true
+                    }));
+                    saveToStorage();
+                    filterExpenses();
+                    if (!isSilent) {
+                        showToast(`구글 드라이브 '법인카드 영수증 db'에서 저장된 내역 ${result.data.length}건을 로딩했습니다!`, 'success');
                     }
                 }
             } catch (err) {
                 console.warn('Google Drive auto-fetch error (CORS or network):', err);
                 if (!isSilent) {
-                    showToast('구글 드라이브 로딩 중 네트워크 오류가 발생했습니다. 저장된 마지막 내역을 유지합니다.');
+                    showToast('구글 드라이브 로딩 중 네트워크 오류가 발생했습니다. 구글 드라이브에 저장 완료된 내역만 유지합니다.');
                 }
             } finally {
                 if (spinIcon) spinIcon.classList.remove('fa-spin');
