@@ -867,6 +867,10 @@ function doPost(e) {
 
         function closeModal() {
             document.getElementById('expenseModal').classList.add('hidden');
+            document.getElementById('expenseForm').reset();
+            document.getElementById('editDocId').value = '';
+            removeImage('receipt');
+            removeImage('statement');
         }
 
         function openDriveSettingsModal() {
