@@ -558,6 +558,45 @@ function doPost(e) {
         let expenses = [];
         let driveSettings = { webhookUrl: "" };
 
+        // Modal triggers for Clear Cache
+        function openClearCacheModal() {
+            const modal = document.getElementById('clearCacheModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeClearCacheModal() {
+            const modal = document.getElementById('clearCacheModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        // 모바일 및 브라우저 로컬 캐시 완전 삭제 실행
+        function executeClearCache() {
+            closeClearCacheModal();
+            try {
+                // 기존 및 이전 버전의 모든 로컬 스토리지 키 삭제
+                localStorage.removeItem(STORAGE_KEY);
+                localStorage.removeItem('corp_card_expenses');
+                localStorage.removeItem('corp_expenses');
+                sessionStorage.clear();
+            } catch (e) {
+                console.warn('Cache clear warning:', e);
+            }
+
+            // 메모리 내역 초기화 및 화면 갱신
+            expenses = [];
+            renderTable(expenses);
+            updateDashboardStats();
+
+            showToast('모바일 기기의 저장 캐시가 깨끗하게 삭제되었습니다!', 'success');
+
+            // 구글 드라이브 연동 주소가 있으면 최신 '법인카드 영수증 db' 데이터만 새로 로딩
+            if (driveSettings.webhookUrl && driveSettings.webhookUrl.startsWith('http')) {
+                setTimeout(() => {
+                    fetchFromGoogleDrive();
+                }, 400);
+            }
+        }
+
         // Application Initialization: 1차 로컬 즉시 로딩 후 구글 드라이브 최신 데이터 자동 동기화
         window.addEventListener('DOMContentLoaded', async () => {
             // 1. Load Saved API Key
