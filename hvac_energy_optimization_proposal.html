@@ -11,12 +11,12 @@
     <!-- html2canvas & jsPDF for 1:1 Page-by-Page A4 Landscape PDF Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- Pretendard Font -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <!-- Noto Sans KR Font (Google Fonts) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap">
 
     <style>
         body {
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
             background-color: #0f172a;
             color: #1e293b;
         }
@@ -188,7 +188,7 @@
                 <!-- Client Site Visual Slot -->
                 <div class="col-span-5 bg-slate-900/90 p-4 rounded-2xl border border-indigo-800/40 shadow-xl flex flex-col items-center">
                     <div class="w-full h-52 rounded-xl bg-slate-800 overflow-hidden relative group shadow-inner border border-indigo-900/60 flex items-center justify-center">
-                        <img id="img-client-preview" src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80"
+                        <img id="img-client-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 520'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%231e293b'/%3E%3Cstop offset='1' stop-color='%2311182a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='520' fill='url(%23g1)'/%3E%3Crect x='90' y='170' width='180' height='280' fill='%232f3b52'/%3E%3Crect x='300' y='110' width='220' height='340' fill='%23374560'/%3E%3Crect x='550' y='200' width='160' height='250' fill='%232f3b52'/%3E%3Cg fill='%235b6f92'%3E%3Crect x='115' y='200' width='30' height='30'/%3E%3Crect x='160' y='200' width='30' height='30'/%3E%3Crect x='205' y='200' width='30' height='30'/%3E%3Crect x='115' y='250' width='30' height='30'/%3E%3Crect x='160' y='250' width='30' height='30'/%3E%3Crect x='205' y='250' width='30' height='30'/%3E%3Crect x='330' y='150' width='35' height='35'/%3E%3Crect x='385' y='150' width='35' height='35'/%3E%3Crect x='440' y='150' width='35' height='35'/%3E%3Crect x='330' y='210' width='35' height='35'/%3E%3Crect x='385' y='210' width='35' height='35'/%3E%3Crect x='440' y='210' width='35' height='35'/%3E%3Crect x='330' y='270' width='35' height='35'/%3E%3Crect x='385' y='270' width='35' height='35'/%3E%3Crect x='440' y='270' width='35' height='35'/%3E%3Crect x='575' y='230' width='28' height='28'/%3E%3Crect x='618' y='230' width='28' height='28'/%3E%3Crect x='575' y='280' width='28' height='28'/%3E%3Crect x='618' y='280' width='28' height='28'/%3E%3C/g%3E%3Crect x='0' y='450' width='800' height='70' fill='%230b1220'/%3E%3Ctext x='400' y='495' font-family='sans-serif' font-size='22' fill='%2394a3c4' text-anchor='middle' letter-spacing='2'%3EFACILITY SITE VIEW%3C/text%3E%3C/svg%3E"
                              alt="제안 대상 고객사 전경" class="w-full h-full object-cover">
                         <label for="input-client-img" class="absolute inset-0 bg-slate-950/80 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-xs font-semibold p-2 no-print">
                             <span>📷 업체 사진 / 로고 교체</span>
@@ -335,7 +335,7 @@
                 <!-- Legacy Equipment -->
                 <div class="bg-amber-50/50 rounded-xl border border-amber-200 p-3 flex gap-3 items-center">
                     <div class="w-36 h-28 rounded-lg bg-slate-200 overflow-hidden relative group border border-amber-300 shrink-0">
-                        <img id="img-legacy-preview" src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80"
+                        <img id="img-legacy-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23e7dcc8'/%3E%3Crect x='60' y='60' width='280' height='190' rx='6' fill='%23b8a888' stroke='%23967d54' stroke-width='3'/%3E%3Crect x='80' y='85' width='240' height='30' fill='%23967d54'/%3E%3Ccircle cx='120' cy='160' r='34' fill='%23e7dcc8' stroke='%23967d54' stroke-width='4'/%3E%3Ccircle cx='120' cy='160' r='6' fill='%23967d54'/%3E%3Cline x1='120' y1='160' x2='120' y2='134' stroke='%23967d54' stroke-width='4'/%3E%3Cline x1='120' y1='160' x2='142' y2='172' stroke='%23967d54' stroke-width='4'/%3E%3Crect x='190' y='140' width='120' height='60' fill='%23a99574' stroke='%23967d54' stroke-width='2'/%3E%3Cline x1='205' y1='140' x2='205' y2='200' stroke='%23967d54' stroke-width='2'/%3E%3Cline x1='225' y1='140' x2='225' y2='200' stroke='%23967d54' stroke-width='2'/%3E%3Cline x1='245' y1='140' x2='245' y2='200' stroke='%23967d54' stroke-width='2'/%3E%3Cline x1='265' y1='140' x2='265' y2='200' stroke='%23967d54' stroke-width='2'/%3E%3Cline x1='285' y1='140' x2='285' y2='200' stroke='%23967d54' stroke-width='2'/%3E%3Ctext x='200' y='235' font-family='sans-serif' font-size='16' fill='%23785f38' text-anchor='middle' letter-spacing='1'%3ELEGACY UNIT · 14yr%3C/text%3E%3C/svg%3E"
                              alt="기존 노후 냉동기" class="w-full h-full object-cover">
                         <label for="input-legacy-img" class="absolute inset-0 bg-slate-950/75 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-semibold p-1 no-print">
                             <span>📷 사진 변경</span>
@@ -359,7 +359,7 @@
                 <!-- Proposed Equipment -->
                 <div class="bg-indigo-50/50 rounded-xl border border-indigo-200 p-3 flex gap-3 items-center">
                     <div class="w-36 h-28 rounded-lg bg-slate-200 overflow-hidden relative group border border-indigo-300 shrink-0">
-                        <img id="img-new-preview" src="https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80"
+                        <img id="img-new-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23e8e9fb'/%3E%3Crect x='60' y='50' width='280' height='200' rx='10' fill='%23ffffff' stroke='%234f46e5' stroke-width='3'/%3E%3Crect x='80' y='75' width='240' height='24' rx='4' fill='%234f46e5'/%3E%3Ccircle cx='125' cy='165' r='42' fill='none' stroke='%234f46e5' stroke-width='5'/%3E%3Ccircle cx='125' cy='165' r='26' fill='none' stroke='%236366f1' stroke-width='3'/%3E%3Ccircle cx='125' cy='165' r='5' fill='%234f46e5'/%3E%3Cline x1='125' y1='123' x2='125' y2='139' stroke='%234f46e5' stroke-width='4'/%3E%3Cline x1='125' y1='191' x2='125' y2='207' stroke='%234f46e5' stroke-width='4'/%3E%3Cline x1='83' y1='165' x2='99' y2='165' stroke='%234f46e5' stroke-width='4'/%3E%3Cline x1='151' y1='165' x2='167' y2='165' stroke='%234f46e5' stroke-width='4'/%3E%3Crect x='195' y='120' width='110' height='90' rx='6' fill='%23eef0fd' stroke='%234f46e5' stroke-width='2'/%3E%3Cline x1='210' y1='140' x2='290' y2='140' stroke='%236366f1' stroke-width='2'/%3E%3Cline x1='210' y1='160' x2='290' y2='160' stroke='%236366f1' stroke-width='2'/%3E%3Cline x1='210' y1='180' x2='260' y2='180' stroke='%236366f1' stroke-width='2'/%3E%3Ctext x='200' y='240' font-family='sans-serif' font-size='16' fill='%234338ca' text-anchor='middle' letter-spacing='1'%3EINVERTER TURBO%3C/text%3E%3C/svg%3E"
                              alt="신규 고효율 냉동기" class="w-full h-full object-cover">
                         <label for="input-new-img" class="absolute inset-0 bg-slate-950/75 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-semibold p-1 no-print">
                             <span>📷 사진 변경</span>
