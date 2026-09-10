@@ -43,6 +43,19 @@
             flex-shrink: 0 !important;
         }
 
+        /* Print/PDF Text Mirror: browsers frequently fail to paint <input> value
+           text during window.print() or canvas capture, so every editable field
+           gets a plain-text twin that swaps in only for print/PDF output. */
+        .print-value {
+            display: none;
+        }
+        @media print {
+            .pdf-source-input { display: none !important; }
+            .print-value { display: flex !important; align-items: center; }
+        }
+        body.pdf-exporting .pdf-source-input { display: none !important; }
+        body.pdf-exporting .print-value { display: flex !important; align-items: center; }
+
         /* A4 Landscape Page Standard (297mm x 210mm, Ratio: 1.414 : 1) */
         .a4-page {
             width: 1140px;
@@ -60,7 +73,10 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            gap: 16px;
+        }
+        .a4-page > .page-footer {
+            margin-top: auto;
         }
 
         /* Print Settings for Native Browser Print (Ctrl+P) */
@@ -68,6 +84,7 @@
             size: A4 landscape;
             margin: 0;
         }
+        body.pdf-exporting .no-print { display: none !important; }
         @media print {
             .no-print { display: none !important; }
             body {
@@ -204,7 +221,7 @@
             </div>
 
             <!-- Footer Meta Block -->
-            <div class="flex justify-between items-center border-t border-slate-800/80 pt-3 text-xs text-slate-400">
+            <div class="page-footer flex justify-between items-center border-t border-slate-800/80 pt-3 text-xs text-slate-400">
                 <span class="no-wrap">주관: 공무·시설관리팀 & 에너지엔지니어링 솔루션 파트너</span>
                 <span class="font-bold text-slate-500">Page 1 of 6</span>
             </div>
@@ -231,42 +248,42 @@
             <!-- Metadata Grid -->
             <div class="grid grid-cols-4 gap-3">
                 <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1 no-wrap">📅 제안 일자</span>
+                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1 no-wrap">📅 제안 일자</span>
                     <input type="date" id="meta-date" value="2026-09-10"
                            class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 focus:outline-none">
                 </div>
                 <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1 no-wrap">📍 대상 구역</span>
+                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1 no-wrap">📍 대상 구역</span>
                     <input type="text" id="meta-location" value="구미 정담원 본동 기계실 (중앙 칠러실)"
                            class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 focus:outline-none">
                 </div>
                 <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1 no-wrap">👥 주관 부서</span>
+                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1 no-wrap">👥 주관 부서</span>
                     <input type="text" id="meta-dept" value="공무·시설관리팀 & 에너지 파트너"
                            class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 focus:outline-none">
                 </div>
                 <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1 no-wrap">🎯 제안 성격</span>
+                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1 no-wrap">🎯 제안 성격</span>
                     <input type="text" id="meta-type" value="노후 설비 고효율 전환 및 전력비 절감"
                            class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 focus:outline-none">
                 </div>
             </div>
 
             <!-- Core Objectives 3 Cards -->
-            <div class="bg-indigo-50/50 rounded-xl p-3.5 border border-indigo-100 space-y-2">
+            <div class="bg-indigo-50/50 rounded-xl p-3 border border-indigo-100 space-y-2">
                 <h4 class="text-xs font-extrabold text-indigo-900 uppercase tracking-wider">추진 목적 및 당위성 (Core Objectives)</h4>
                 <div class="grid grid-cols-3 gap-3 text-xs text-slate-700">
                     <div class="bg-white p-3 rounded-lg border border-indigo-100 shadow-2xs">
                         <span class="text-indigo-600 font-bold block mb-1">1. 노후 전력 누수 원천 차단</span>
-                        <p class="leading-relaxed text-break-none text-[11px] text-slate-600">14년 경과로 효율이 28% 이상 저하된 노후 압축기를 교체하여 매월 580만 원 이상의 전력 낭비를 방지합니다.</p>
+                        <p class="leading-relaxed text-break-none text-xs text-slate-600">14년 경과로 효율이 28% 이상 저하된 노후 압축기를 교체하여 매월 580만 원 이상의 전력 낭비를 방지합니다.</p>
                     </div>
                     <div class="bg-white p-3 rounded-lg border border-indigo-100 shadow-2xs">
                         <span class="text-indigo-600 font-bold block mb-1">2. 한전 지원금 연계 단기 회수</span>
-                        <p class="leading-relaxed text-break-none text-[11px] text-slate-600">최대 2억 원의 고효율 지원금을 연계하여 실 순투자비를 최소화하고 2년 이내에 원금을 전액 회수합니다.</p>
+                        <p class="leading-relaxed text-break-none text-xs text-slate-600">최대 2억 원의 고효율 지원금을 연계하여 실 순투자비를 최소화하고 2년 이내에 원금을 전액 회수합니다.</p>
                     </div>
                     <div class="bg-white p-3 rounded-lg border border-indigo-100 shadow-2xs">
                         <span class="text-indigo-600 font-bold block mb-1">3. 하절기 불시 셧다운 예방</span>
-                        <p class="leading-relaxed text-break-none text-[11px] text-slate-600">혹서기 피크 시 발생 가능한 노후 냉동기 트립을 사전에 제거하여 사업장의 연속 생산성을 보장합니다.</p>
+                        <p class="leading-relaxed text-break-none text-xs text-slate-600">혹서기 피크 시 발생 가능한 노후 냉동기 트립을 사전에 제거하여 사업장의 연속 생산성을 보장합니다.</p>
                     </div>
                 </div>
             </div>
@@ -274,34 +291,34 @@
             <!-- 5 Big KPI Summary Cards -->
             <div class="grid grid-cols-5 gap-3">
                 <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-center">
-                    <span class="text-[11px] text-slate-500 font-semibold block no-wrap">초기 실 순투자비</span>
+                    <span class="text-xs text-slate-500 font-semibold block no-wrap">초기 실 순투자비</span>
                     <span id="kpi-net-capex" class="text-2xl font-black text-slate-900 block my-1 no-wrap">1억 2,500</span>
-                    <span class="text-[10px] text-slate-400 no-wrap">만 원 (보조금 반영)</span>
+                    <span class="text-[11px] text-slate-400 no-wrap">만 원 (보조금 반영)</span>
                 </div>
                 <div class="bg-indigo-50/70 p-3.5 rounded-xl border border-indigo-200 text-center">
-                    <span class="text-[11px] text-indigo-700 font-semibold block no-wrap">연간 총 절감액</span>
+                    <span class="text-xs text-indigo-700 font-semibold block no-wrap">연간 총 절감액</span>
                     <span id="kpi-annual-savings" class="text-2xl font-black text-indigo-700 block my-1 no-wrap">7,039</span>
-                    <span class="text-[10px] text-indigo-500 no-wrap">만 원 / 년 (▼ 59%)</span>
+                    <span class="text-[11px] text-indigo-500 no-wrap">만 원 / 년 (▼ 59%)</span>
                 </div>
                 <div class="bg-emerald-50/70 p-3.5 rounded-xl border border-emerald-200 text-center">
-                    <span class="text-[11px] text-emerald-700 font-semibold block no-wrap">단순 투자 회수 기간</span>
+                    <span class="text-xs text-emerald-700 font-semibold block no-wrap">단순 투자 회수 기간</span>
                     <span id="kpi-payback" class="text-2xl font-black text-emerald-600 block my-1 no-wrap">1.78</span>
-                    <span class="text-[10px] text-emerald-500 no-wrap">년 (약 21개월)</span>
+                    <span class="text-[11px] text-emerald-500 no-wrap">년 (약 21개월)</span>
                 </div>
                 <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-center">
-                    <span class="text-[11px] text-slate-500 font-semibold block no-wrap">10개년 누적 순편익</span>
+                    <span class="text-xs text-slate-500 font-semibold block no-wrap">10개년 누적 순편익</span>
                     <span id="kpi-10yr-benefit" class="text-2xl font-black text-slate-800 block my-1 no-wrap">5억 7,890</span>
-                    <span class="text-[10px] text-slate-400 no-wrap">만 원 (순현금 창출)</span>
+                    <span class="text-[11px] text-slate-400 no-wrap">만 원 (순현금 창출)</span>
                 </div>
                 <div class="bg-teal-50/70 p-3.5 rounded-xl border border-teal-200 text-center">
-                    <span class="text-[11px] text-teal-700 font-semibold block no-wrap">연간 온실가스 감축</span>
+                    <span class="text-xs text-teal-700 font-semibold block no-wrap">연간 온실가스 감축</span>
                     <span class="text-2xl font-black text-teal-700 block my-1 no-wrap">172.9</span>
-                    <span class="text-[10px] text-teal-600 no-wrap">tCO₂eq / 년</span>
+                    <span class="text-[11px] text-teal-600 no-wrap">tCO₂eq / 년</span>
                 </div>
             </div>
 
             <!-- Footer -->
-            <div class="flex justify-between items-center border-t border-slate-100 pt-2 text-xs text-slate-400">
+            <div class="page-footer flex justify-between items-center border-t border-slate-100 pt-2 text-xs text-slate-400">
                 <span class="no-wrap">제1장 제안 개요 & 핵심 성과 지표</span>
                 <span class="font-bold text-slate-500">Page 2 of 6</span>
             </div>
@@ -333,8 +350,8 @@
             <!-- Top Row: Equipment Photo Cards (Side by Side) -->
             <div class="grid grid-cols-2 gap-4">
                 <!-- Legacy Equipment -->
-                <div class="bg-amber-50/50 rounded-xl border border-amber-200 p-3 flex gap-3 items-center">
-                    <div class="w-36 h-28 rounded-lg bg-slate-200 overflow-hidden relative group border border-amber-300 shrink-0">
+                <div class="bg-amber-50/50 rounded-xl border border-amber-200 p-3.5 flex gap-3 items-center min-h-[140px]">
+                    <div class="w-36 h-32 rounded-lg bg-slate-200 overflow-hidden relative group border border-amber-300 shrink-0">
                         <img id="img-legacy-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23e7dcc8'/%3E%3Crect x='60' y='60' width='280' height='190' rx='6' fill='%23b8a888' stroke='%23967d54' stroke-width='3'/%3E%3Crect x='80' y='85' width='240' height='30' fill='%23967d54'/%3E%3Ccircle cx='120' cy='160' r='34' fill='%23e7dcc8' stroke='%23967d54' stroke-width='4'/%3E%3Ccircle cx='120' cy='160' r='6' fill='%23967d54'/%3E%3Cline x1='120' y1='160' x2='120' y2='134' stroke='%23967d54' stroke-width='4'/%3E%3Cline x1='120' y1='160' x2='142' y2='172' stroke='%23967d54' stroke-width='4'/%3E%3Crect x='190' y='140' width='120' height='60' fill='%23a99574' stroke='%23967d54' stroke-width='2'/%3E%3Cline x1='205' y1='140' x2='205' y2='200' stroke='%23967d54' stroke-width='2'/%3E%3Cline x1='225' y1='140' x2='225' y2='200' stroke='%23967d54' stroke-width='2'/%3E%3Cline x1='245' y1='140' x2='245' y2='200' stroke='%23967d54' stroke-width='2'/%3E%3Cline x1='265' y1='140' x2='265' y2='200' stroke='%23967d54' stroke-width='2'/%3E%3Cline x1='285' y1='140' x2='285' y2='200' stroke='%23967d54' stroke-width='2'/%3E%3Ctext x='200' y='235' font-family='sans-serif' font-size='16' fill='%23785f38' text-anchor='middle' letter-spacing='1'%3ELEGACY UNIT · 14yr%3C/text%3E%3C/svg%3E"
                              alt="기존 노후 냉동기" class="w-full h-full object-cover">
                         <label for="input-legacy-img" class="absolute inset-0 bg-slate-950/75 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-semibold p-1 no-print">
@@ -348,7 +365,7 @@
                             <span class="text-[10px] text-amber-700 font-bold no-wrap">14년 경과</span>
                         </div>
                         <input type="text" id="legacy-name-input" value="정속형 스크루 냉동기 (300 마력)"
-                               class="font-bold text-slate-900 bg-transparent border-b border-amber-300 focus:outline-none w-full text-xs py-0.5">
+                               class="font-bold text-slate-900 bg-transparent border-b border-amber-300 focus:outline-none w-full text-sm py-0.5">
                         <div class="text-[11px] text-slate-600 space-y-0.5">
                             <div class="flex justify-between no-wrap"><span>실운전 COP:</span><strong class="text-rose-600">2.74 (열화율 28%)</strong></div>
                             <div class="flex justify-between no-wrap"><span>연간 수선비:</span><strong class="text-rose-600">약 1,800만 원</strong></div>
@@ -357,8 +374,8 @@
                 </div>
 
                 <!-- Proposed Equipment -->
-                <div class="bg-indigo-50/50 rounded-xl border border-indigo-200 p-3 flex gap-3 items-center">
-                    <div class="w-36 h-28 rounded-lg bg-slate-200 overflow-hidden relative group border border-indigo-300 shrink-0">
+                <div class="bg-indigo-50/50 rounded-xl border border-indigo-200 p-3.5 flex gap-3 items-center min-h-[140px]">
+                    <div class="w-36 h-32 rounded-lg bg-slate-200 overflow-hidden relative group border border-indigo-300 shrink-0">
                         <img id="img-new-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23e8e9fb'/%3E%3Crect x='60' y='50' width='280' height='200' rx='10' fill='%23ffffff' stroke='%234f46e5' stroke-width='3'/%3E%3Crect x='80' y='75' width='240' height='24' rx='4' fill='%234f46e5'/%3E%3Ccircle cx='125' cy='165' r='42' fill='none' stroke='%234f46e5' stroke-width='5'/%3E%3Ccircle cx='125' cy='165' r='26' fill='none' stroke='%236366f1' stroke-width='3'/%3E%3Ccircle cx='125' cy='165' r='5' fill='%234f46e5'/%3E%3Cline x1='125' y1='123' x2='125' y2='139' stroke='%234f46e5' stroke-width='4'/%3E%3Cline x1='125' y1='191' x2='125' y2='207' stroke='%234f46e5' stroke-width='4'/%3E%3Cline x1='83' y1='165' x2='99' y2='165' stroke='%234f46e5' stroke-width='4'/%3E%3Cline x1='151' y1='165' x2='167' y2='165' stroke='%234f46e5' stroke-width='4'/%3E%3Crect x='195' y='120' width='110' height='90' rx='6' fill='%23eef0fd' stroke='%234f46e5' stroke-width='2'/%3E%3Cline x1='210' y1='140' x2='290' y2='140' stroke='%236366f1' stroke-width='2'/%3E%3Cline x1='210' y1='160' x2='290' y2='160' stroke='%236366f1' stroke-width='2'/%3E%3Cline x1='210' y1='180' x2='260' y2='180' stroke='%236366f1' stroke-width='2'/%3E%3Ctext x='200' y='240' font-family='sans-serif' font-size='16' fill='%234338ca' text-anchor='middle' letter-spacing='1'%3EINVERTER TURBO%3C/text%3E%3C/svg%3E"
                              alt="신규 고효율 냉동기" class="w-full h-full object-cover">
                         <label for="input-new-img" class="absolute inset-0 bg-slate-950/75 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-semibold p-1 no-print">
@@ -372,7 +389,7 @@
                             <span class="text-[10px] text-indigo-700 font-bold no-wrap">신규 (수명 20년)</span>
                         </div>
                         <input type="text" id="new-name-input" value="초고효율 자기베어링 인버터 터보 (300 마력)"
-                               class="font-bold text-indigo-950 bg-transparent border-b border-indigo-300 focus:outline-none w-full text-xs py-0.5">
+                               class="font-bold text-indigo-950 bg-transparent border-b border-indigo-300 focus:outline-none w-full text-sm py-0.5">
                         <div class="text-[11px] text-slate-600 space-y-0.5">
                             <div class="flex justify-between no-wrap"><span>설계 COP:</span><strong class="text-emerald-600">6.20 (+126% 향상)</strong></div>
                             <div class="flex justify-between no-wrap"><span>연간 수선비:</span><strong class="text-emerald-600">약 400만 원 (원격관제)</strong></div>
@@ -473,7 +490,7 @@
             </div>
 
             <!-- Footer -->
-            <div class="flex justify-between items-center border-t border-slate-100 pt-2 text-xs text-slate-400">
+            <div class="page-footer flex justify-between items-center border-t border-slate-100 pt-2 text-xs text-slate-400">
                 <span class="no-wrap">제2장 장비 비교 & 제3장 상세 사양</span>
                 <span class="font-bold text-slate-500">Page 3 of 6</span>
             </div>
@@ -498,10 +515,10 @@
             </div>
 
             <!-- Two Columns: Left Controls vs Right Visuals -->
-            <div class="grid grid-cols-12 gap-6 items-center my-auto">
+            <div class="grid grid-cols-12 gap-6 items-stretch">
 
                 <!-- Left Column: Controls (6 Cols) -->
-                <div class="col-span-6 space-y-3.5 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                <div class="col-span-6 flex flex-col justify-center space-y-3.5 bg-slate-50 p-4 rounded-2xl border border-slate-200">
 
                     <!-- 1. Operating Hours -->
                     <div class="space-y-1.5">
@@ -575,7 +592,7 @@
                 </div>
 
                 <!-- Right Column: Twin Metric Highlights & OPEX Bar Chart (6 Cols) -->
-                <div class="col-span-6 space-y-3">
+                <div class="col-span-6 flex flex-col justify-center space-y-3">
                     <!-- Clean, Unbreakable Twin Metric Cards -->
                     <div class="grid grid-cols-2 gap-3 bg-indigo-50/50 p-3 rounded-2xl border border-indigo-100">
                         <div class="bg-white p-3 rounded-xl border border-indigo-100 shadow-2xs text-center flex flex-col items-center justify-center">
@@ -609,7 +626,7 @@
             </div>
 
             <!-- Footer -->
-            <div class="flex justify-between items-center border-t border-slate-100 pt-2 text-xs text-slate-400">
+            <div class="page-footer flex justify-between items-center border-t border-slate-100 pt-2 text-xs text-slate-400">
                 <span class="no-wrap">제4장 인터랙티브 ROI 시뮬레이터</span>
                 <span class="font-bold text-slate-500">Page 4 of 6</span>
             </div>
@@ -656,7 +673,7 @@
             </div>
 
             <!-- Footer -->
-            <div class="flex justify-between items-center border-t border-slate-100 pt-2 text-xs text-slate-400">
+            <div class="page-footer flex justify-between items-center border-t border-slate-100 pt-2 text-xs text-slate-400">
                 <span class="no-wrap">제5장 10개년 LCC 누적 현금흐름</span>
                 <span class="font-bold text-slate-500">Page 5 of 6</span>
             </div>
@@ -671,7 +688,7 @@
                         <span class="w-2.5 h-5 bg-indigo-600 rounded-full inline-block"></span>
                         제6장. 향후 추진 일정안 (Action Plan) & ESG 환경 효과
                     </h3>
-                    <p class="text-xs text-slate-500 mt-0.5">
+                    <p class="text-xs text-slate-500 mt-0.5 no-print">
                         사업 승인부터 시운전까지의 단계별 일정을 직접 수정하거나 단계를 추가할 수 있습니다.
                     </p>
                 </div>
@@ -686,7 +703,7 @@
             </div>
 
             <!-- Editable Action Plan Table -->
-            <div class="overflow-hidden rounded-xl border border-slate-200 text-xs my-auto">
+            <div class="overflow-hidden rounded-xl border border-slate-200 text-xs">
                 <table class="w-full text-left border-collapse">
                     <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 text-[11px]">
                         <tr>
@@ -722,7 +739,7 @@
             </div>
 
             <!-- Footer -->
-            <div class="flex justify-between items-center border-t border-slate-100 pt-2 text-xs text-slate-400">
+            <div class="page-footer flex justify-between items-center border-t border-slate-100 pt-2 text-xs text-slate-400">
                 <span class="no-wrap">제6장 추진 일정 & ESG 환경 효과</span>
                 <span class="font-bold text-slate-500">Page 6 of 6</span>
             </div>
@@ -937,8 +954,8 @@
 
                 const isPositive = currentBal >= 0;
                 const statusBadge = isPositive
-                    ? '<span class="bg-emerald-100 text-emerald-800 text-[9px] font-bold px-1.5 py-0.5 rounded-full no-wrap">흑자 전환</span>'
-                    : '<span class="bg-slate-100 text-slate-500 text-[9px] font-medium px-1.5 py-0.5 rounded-full no-wrap">회수 중</span>';
+                    ? '<span class="bg-emerald-100 text-emerald-800 text-[11px] font-bold px-1.5 py-0.5 rounded-full no-wrap">흑자 전환</span>'
+                    : '<span class="bg-slate-100 text-slate-500 text-[11px] font-medium px-1.5 py-0.5 rounded-full no-wrap">회수 중</span>';
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50">
@@ -1033,6 +1050,35 @@
                     </tr>
                 `;
             });
+            attachPrintMirrors(tbody);
+        }
+
+        // Print/PDF Text Mirror: some browsers fail to paint <input> value text
+        // when printing or capturing a canvas snapshot, leaving fields blank.
+        // Give every text/number/date input a plain-text twin that only shows
+        // during print or PDF export, so the exported document never loses data.
+        function attachPrintMirror(input) {
+            if (input.dataset.mirrored === 'true') return;
+            input.dataset.mirrored = 'true';
+            input.classList.add('pdf-source-input');
+            const mirror = document.createElement('span');
+            mirror.className = 'print-value ' + input.className;
+            const sync = () => {
+                if (input.type === 'date' && input.value) {
+                    const [y, m, d] = input.value.split('-');
+                    mirror.textContent = `${y}.${m}.${d}`;
+                } else {
+                    mirror.textContent = input.value;
+                }
+            };
+            sync();
+            input.addEventListener('input', sync);
+            input.addEventListener('change', sync);
+            input.insertAdjacentElement('afterend', mirror);
+        }
+
+        function attachPrintMirrors(root) {
+            root.querySelectorAll('input[type="text"], input[type="number"], input[type="date"]').forEach(attachPrintMirror);
         }
 
         function deleteScheduleRow(idx) {
@@ -1070,6 +1116,8 @@
 
             const clientName = document.getElementById('client-company-name').value || '고객사';
             const fileName = `HVAC_설비교체_투자타당성보고서_${clientName.replace(/\s+/g, '_')}_A4가로.pdf`;
+
+            document.body.classList.add('pdf-exporting');
 
             try {
                 // Initialize jsPDF for A4 Landscape
@@ -1114,6 +1162,7 @@
                 showToast("PDF 직접 다운로드 오류로 브라우저 인쇄 창을 엽니다.");
                 window.print();
             } finally {
+                document.body.classList.remove('pdf-exporting');
                 btn.disabled = false;
                 btnIcon.innerText = "📥";
                 btnText.innerText = "A4 가로 PDF 다운로드 (6쪽)";
@@ -1129,6 +1178,10 @@
 
             // Render schedule
             renderSchedule();
+
+            // Print/PDF text mirrors for all other editable fields (cover title,
+            // proposal metadata, spec inputs, operating-hours inputs)
+            attachPrintMirrors(document);
 
             // Schedule Buttons
             document.getElementById('btn-add-schedule-row').addEventListener('click', () => {
