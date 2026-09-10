@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HVAC 설비 교체 및 에너지 비용 최적화 제안서</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- html2canvas & jsPDF for 1:1 Page-by-Page A4 Landscape PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Pretendard Font -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+
+    <style>
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: #0f172a;
+            color: #1e293b;
+        }
+
+        /* Strict anti-wrapping & layout stabilization rules */
+        * {
+            box-sizing: border-box;
+        }
+        .no-wrap {
+            white-space: nowrap !important;
+            word-break: keep-all !important;
+            overflow-wrap: normal !important;
+        }
+        .text-break-none {
+            word-break: keep-all !important;
+            overflow-wrap: normal !important;
+        }
+        .stat-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap !important;
+            word-break: keep-all !important;
+            flex-shrink: 0 !important;
+        }
+
+        /* A4 Landscape Page Standard (297mm x 210mm, Ratio: 1.414 : 1) */
+        .a4-page {
+            width: 1140px;
+            min-width: 1140px;
+            max-width: 1140px;
+            height: 806px;
+            min-height: 806px;
+            max-height: 806px;
+            margin: 0 auto 32px auto;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.25);
+            padding: 28px 36px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Print Settings for Native Browser Print (Ctrl+P) */
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .a4-page {
+                width: 297mm !important;
+                min-width: 297mm !important;
+                max-width: 297mm !important;
+                height: 210mm !important;
+                min-height: 210mm !important;
+                max-height: 210mm !important;
+                margin: 0 !important;
+                padding: 12mm 16mm !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+                page-break-after: always !important;
+                break-after: page !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-indigo-600 selection:text-white bg-slate-900 text-slate-800">
+
+    <!-- Top Sticky Navigation Bar -->
+    <header class="sticky top-0 z-50 bg-slate-900/95 backdrop-blur border-b border-slate-800 shadow-md no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white font-black text-lg shadow-sm shadow-indigo-500/30 shrink-0">
+                        HVAC
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 class="text-base sm:text-lg font-extrabold text-white tracking-tight no-wrap">설비 교체 및 에너지비용 최적화 제안서</h1>
+                            <span class="bg-indigo-500/20 text-indigo-300 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-indigo-500/30 hidden sm:inline-flex items-center gap-1 no-wrap">
+                                <span>📄</span> A4 가로 6페이지 완결형
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-400 no-wrap">주관: 공무·시설관리팀 & 에너지엔지니어링 파트너</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 sm:gap-2.5">
+                    <!-- Page-by-Page Direct PDF Download Button -->
+                    <button id="btn-download-pdf" type="button" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-xs font-bold hover:from-indigo-500 hover:to-violet-500 transition-all shadow-md shadow-indigo-600/30 no-wrap">
+                        <span id="pdf-icon">📥</span>
+                        <span id="pdf-text">A4 가로 PDF 다운로드 (6쪽)</span>
+                    </button>
+                    <!-- Browser Print Button -->
+                    <button id="btn-print" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-700 bg-slate-800 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition-colors shadow-sm no-wrap">
+                        <span>🖨️</span>
+                        <span class="hidden sm:inline">인쇄</span>
+                    </button>
+                    <button id="btn-copy-summary" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300 hover:bg-slate-700 hover:text-white transition-colors shadow-sm no-wrap">
+                        <span>📋</span>
+                        <span class="hidden md:inline">요약 복사</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Proposal Document Container (Page by Page A4 Landscape Format) -->
+    <main id="report-container" class="py-8 flex flex-col items-center">
+
+        <!-- ==================== [페이지 1] 공식 제안서 표지 (Cover Page) ==================== -->
+        <article class="a4-page bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white border border-slate-800">
+            <!-- Header Badge -->
+            <div class="flex justify-between items-center border-b border-slate-800/80 pb-4">
+                <div class="inline-flex items-center gap-2 bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-bold px-3.5 py-1.5 rounded-full no-wrap">
+                    <span>🏢 제안 대상 고객사</span>
+                    <span>|</span>
+                    <span>공식 기술 및 경제성(ROI) 분석 보고서</span>
+                </div>
+                <span class="text-xs text-slate-400 font-medium">문서 번호: ENG-2026-0910</span>
+            </div>
+
+            <!-- Central Content: Title + Site Photo -->
+            <div class="grid grid-cols-12 gap-8 items-center my-auto">
+                <div class="col-span-7 space-y-4">
+                    <div class="flex items-center gap-3">
+                        <input type="text" id="client-company-name" value="구미 정담원 사업장"
+                               class="text-3xl font-black text-white bg-transparent border-b-2 border-indigo-500/50 hover:border-indigo-400 focus:border-indigo-400 focus:outline-none transition-all pr-4 w-full">
+                        <span class="text-2xl font-extrabold text-indigo-300 no-wrap">귀중</span>
+                    </div>
+
+                    <h2 class="text-2xl font-black text-slate-100 leading-snug text-break-none">
+                        노후 중앙 냉동기 초고효율 인버터 교체 및<br>
+                        연간 운영비용 절감 타당성(ROI) 분석 제안서
+                    </h2>
+
+                    <p class="text-xs text-slate-300 leading-relaxed text-break-none">
+                        본 문서는 사업장의 14년 경과 노후 냉방 설비를 초고효율 무급유 인버터 터보 시스템으로 전환 시 발생하는
+                        <strong>연간 전력비 59% 절감</strong>, <strong>한전 고효율 설비 지원금</strong> 연계 및 <strong>2년 이내 단기 투자회수</strong>를
+                        검증하기 위해 작성된 공식 기술 제안서입니다.
+                    </p>
+
+                    <div class="flex items-center gap-4 pt-4 border-t border-slate-800/80 text-xs text-slate-300">
+                        <div class="flex items-center gap-1.5 no-wrap">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+                            <span>설비 용량: <strong><span id="cover-hp-display">300</span> 마력 매칭</strong></span>
+                        </div>
+                        <div class="flex items-center gap-1.5 no-wrap">
+                            <span class="w-2 h-2 rounded-full bg-indigo-400 shrink-0"></span>
+                            <span>회수 기간: <strong>2년 미만 달성</strong></span>
+                        </div>
+                        <div class="flex items-center gap-1.5 no-wrap">
+                            <span class="w-2 h-2 rounded-full bg-teal-400 shrink-0"></span>
+                            <span>ESG 탄소 감축 인증 대상</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Client Site Visual Slot -->
+                <div class="col-span-5 bg-slate-900/90 p-4 rounded-2xl border border-indigo-800/40 shadow-xl flex flex-col items-center">
+                    <div class="w-full h-52 rounded-xl bg-slate-800 overflow-hidden relative group shadow-inner border border-indigo-900/60 flex items-center justify-center">
+                        <img id="img-client-preview" src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80"
+                             alt="제안 대상 고객사 전경" class="w-full h-full object-cover">
+                        <label for="input-client-img" class="absolute inset-0 bg-slate-950/80 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-xs font-semibold p-2 no-print">
+                            <span>📷 업체 사진 / 로고 교체</span>
+                            <span class="text-[10px] text-slate-400 mt-1">클릭하여 이미지 파일 선택</span>
+                        </label>
+                        <input type="file" id="input-client-img" accept="image/*" class="hidden">
+                    </div>
+                    <div class="mt-3 w-full flex justify-between items-center text-xs text-slate-400 px-1">
+                        <span class="font-medium text-[11px] no-wrap">고객사 사업장 전경 / 로고</span>
+                        <label for="input-client-img" class="text-indigo-400 hover:text-indigo-300 font-bold hover:underline cursor-pointer text-xs no-wrap no-print">사진 변경</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Meta Block -->
+            <div class="flex justify-between items-center border-t border-slate-800/80 pt-3 text-xs text-slate-400">
+                <span class="no-wrap">주관: 공무·시설관리팀 & 에너지엔지니어링 솔루션 파트너</span>
+                <span class="font-bold text-slate-500">Page 1 of 6</span>
+            </div>
+        </article>
+
+        <!-- ==================== [페이지 2] 제1장 제안 개요 및 핵심 기대효과 (KPI) ==================== -->
+        <article class="a4-page border border-slate-200">
+            <!-- Section Title Header -->
+            <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                        <span class="w-2.5 h-5 bg-indigo-600 rounded-full inline-block"></span>
+                        제1장. 제안 개요 및 핵심 성과 지표 (KPI Dashboard)
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        경영진 및 재무팀 결재 승인을 위한 공식 추진 명분과 핵심 재무 성과 요약입니다.
+                    </p>
+                </div>
+                <span class="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg border border-slate-200 font-semibold no-wrap">
+                    항목별 인라인 수정 가능
+                </span>
+            </div>
+
+            <!-- Metadata Grid -->
+            <div class="grid grid-cols-4 gap-3">
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1 no-wrap">📅 제안 일자</span>
+                    <input type="date" id="meta-date" value="2026-09-10"
+                           class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 focus:outline-none">
+                </div>
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1 no-wrap">📍 대상 구역</span>
+                    <input type="text" id="meta-location" value="구미 정담원 본동 기계실 (중앙 칠러실)"
+                           class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 focus:outline-none">
+                </div>
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1 no-wrap">👥 주관 부서</span>
+                    <input type="text" id="meta-dept" value="공무·시설관리팀 & 에너지 파트너"
+                           class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 focus:outline-none">
+                </div>
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1 no-wrap">🎯 제안 성격</span>
+                    <input type="text" id="meta-type" value="노후 설비 고효율 전환 및 전력비 절감"
+                           class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 focus:outline-none">
+                </div>
+            </div>
+
+            <!-- Core Objectives 3 Cards -->
+            <div class="bg-indigo-50/50 rounded-xl p-3.5 border border-indigo-100 space-y-2">
+                <h4 class="text-xs font-extrabold text-indigo-900 uppercase tracking-wider">추진 목적 및 당위성 (Core Objectives)</h4>
+                <div class="grid grid-cols-3 gap-3 text-xs text-slate-700">
+                    <div class="bg-white p-3 rounded-lg border border-indigo-100 shadow-2xs">
+                        <span class="text-indigo-600 font-bold block mb-1">1. 노후 전력 누수 원천 차단</span>
+                        <p class="leading-relaxed text-break-none text-[11px] text-slate-600">14년 경과로 효율이 28% 이상 저하된 노후 압축기를 교체하여 매월 580만 원 이상의 전력 낭비를 방지합니다.</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-lg border border-indigo-100 shadow-2xs">
+                        <span class="text-indigo-600 font-bold block mb-1">2. 한전 지원금 연계 단기 회수</span>
+                        <p class="leading-relaxed text-break-none text-[11px] text-slate-600">최대 2억 원의 고효율 지원금을 연계하여 실 순투자비를 최소화하고 2년 이내에 원금을 전액 회수합니다.</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-lg border border-indigo-100 shadow-2xs">
+                        <span class="text-indigo-600 font-bold block mb-1">3. 하절기 불시 셧다운 예방</span>
+                        <p class="leading-relaxed text-break-none text-[11px] text-slate-600">혹서기 피크 시 발생 가능한 노후 냉동기 트립을 사전에 제거하여 사업장의 연속 생산성을 보장합니다.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5 Big KPI Summary Cards -->
+            <div class="grid grid-cols-5 gap-3">
+                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-center">
+                    <span class="text-[11px] text-slate-500 font-semibold block no-wrap">초기 실 순투자비</span>
+                    <span id="kpi-net-capex" class="text-2xl font-black text-slate-900 block my-1 no-wrap">1억 2,500</span>
+                    <span class="text-[10px] text-slate-400 no-wrap">만 원 (보조금 반영)</span>
+                </div>
+                <div class="bg-indigo-50/70 p-3.5 rounded-xl border border-indigo-200 text-center">
+                    <span class="text-[11px] text-indigo-700 font-semibold block no-wrap">연간 총 절감액</span>
+                    <span id="kpi-annual-savings" class="text-2xl font-black text-indigo-700 block my-1 no-wrap">7,039</span>
+                    <span class="text-[10px] text-indigo-500 no-wrap">만 원 / 년 (▼ 59%)</span>
+                </div>
+                <div class="bg-emerald-50/70 p-3.5 rounded-xl border border-emerald-200 text-center">
+                    <span class="text-[11px] text-emerald-700 font-semibold block no-wrap">단순 투자 회수 기간</span>
+                    <span id="kpi-payback" class="text-2xl font-black text-emerald-600 block my-1 no-wrap">1.78</span>
+                    <span class="text-[10px] text-emerald-500 no-wrap">년 (약 21개월)</span>
+                </div>
+                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-center">
+                    <span class="text-[11px] text-slate-500 font-semibold block no-wrap">10개년 누적 순편익</span>
+                    <span id="kpi-10yr-benefit" class="text-2xl font-black text-slate-800 block my-1 no-wrap">5억 7,890</span>
+                    <span class="text-[10px] text-slate-400 no-wrap">만 원 (순현금 창출)</span>
+                </div>
+                <div class="bg-teal-50/70 p-3.5 rounded-xl border border-teal-200 text-center">
+                    <span class="text-[11px] text-teal-700 font-semibold block no-wrap">연간 온실가스 감축</span>
+                    <span class="text-2xl font-black text-teal-700 block my-1 no-wrap">172.9</span>
+                    <span class="text-[10px] text-teal-600 no-wrap">tCO₂eq / 년</span>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex justify-between items-center border-t border-slate-100 pt-2 text-xs text-slate-400">
+                <span class="no-wrap">제1장 제안 개요 & 핵심 성과 지표</span>
+                <span class="font-bold text-slate-500">Page 2 of 6</span>
+            </div>
+        </article>
+
+        <!-- ==================== [페이지 3] 제2장 장비 사진 비교 & 제3장 상세 사양 비교 ==================== -->
+        <article class="a4-page border border-slate-200">
+            <!-- Section Header -->
+            <div class="border-b border-slate-100 pb-2 flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                        <span class="w-2.5 h-5 bg-indigo-600 rounded-full inline-block"></span>
+                        제2장. 기존 vs 신규 설비 사진 및 사양 상세 비교
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        현장 가동 중인 노후 설비와 교체 예정인 초고효율 모델의 시각 사진 및 실효 소비전력을 비교합니다.
+                    </p>
+                </div>
+                <div class="inline-flex rounded-lg border border-slate-300 p-0.5 bg-slate-100 text-xs no-wrap shrink-0">
+                    <button type="button" id="btn-mode-cop" class="px-2.5 py-1 rounded-md bg-white font-bold text-indigo-700 shadow-2xs no-wrap">
+                        COP 기준 계산
+                    </button>
+                    <button type="button" id="btn-mode-kw" class="px-2.5 py-1 rounded-md text-slate-600 hover:text-slate-900 font-medium no-wrap">
+                        소비전력(kW) 직접입력
+                    </button>
+                </div>
+            </div>
+
+            <!-- Top Row: Equipment Photo Cards (Side by Side) -->
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Legacy Equipment -->
+                <div class="bg-amber-50/50 rounded-xl border border-amber-200 p-3 flex gap-3 items-center">
+                    <div class="w-36 h-28 rounded-lg bg-slate-200 overflow-hidden relative group border border-amber-300 shrink-0">
+                        <img id="img-legacy-preview" src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80"
+                             alt="기존 노후 냉동기" class="w-full h-full object-cover">
+                        <label for="input-legacy-img" class="absolute inset-0 bg-slate-950/75 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-semibold p-1 no-print">
+                            <span>📷 사진 변경</span>
+                        </label>
+                        <input type="file" id="input-legacy-img" accept="image/*" class="hidden">
+                    </div>
+                    <div class="flex-1 space-y-1 text-xs">
+                        <div class="flex justify-between items-center">
+                            <span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full no-wrap">⚠️ 현재 노후 설비</span>
+                            <span class="text-[10px] text-amber-700 font-bold no-wrap">14년 경과</span>
+                        </div>
+                        <input type="text" id="legacy-name-input" value="정속형 스크루 냉동기 (300 마력)"
+                               class="font-bold text-slate-900 bg-transparent border-b border-amber-300 focus:outline-none w-full text-xs py-0.5">
+                        <div class="text-[11px] text-slate-600 space-y-0.5">
+                            <div class="flex justify-between no-wrap"><span>실운전 COP:</span><strong class="text-rose-600">2.74 (열화율 28%)</strong></div>
+                            <div class="flex justify-between no-wrap"><span>연간 수선비:</span><strong class="text-rose-600">약 1,800만 원</strong></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Proposed Equipment -->
+                <div class="bg-indigo-50/50 rounded-xl border border-indigo-200 p-3 flex gap-3 items-center">
+                    <div class="w-36 h-28 rounded-lg bg-slate-200 overflow-hidden relative group border border-indigo-300 shrink-0">
+                        <img id="img-new-preview" src="https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80"
+                             alt="신규 고효율 냉동기" class="w-full h-full object-cover">
+                        <label for="input-new-img" class="absolute inset-0 bg-slate-950/75 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-semibold p-1 no-print">
+                            <span>📷 사진 변경</span>
+                        </label>
+                        <input type="file" id="input-new-img" accept="image/*" class="hidden">
+                    </div>
+                    <div class="flex-1 space-y-1 text-xs">
+                        <div class="flex justify-between items-center">
+                            <span class="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2 py-0.5 rounded-full no-wrap">✨ 제안 신규 설비</span>
+                            <span class="text-[10px] text-indigo-700 font-bold no-wrap">신규 (수명 20년)</span>
+                        </div>
+                        <input type="text" id="new-name-input" value="초고효율 자기베어링 인버터 터보 (300 마력)"
+                               class="font-bold text-indigo-950 bg-transparent border-b border-indigo-300 focus:outline-none w-full text-xs py-0.5">
+                        <div class="text-[11px] text-slate-600 space-y-0.5">
+                            <div class="flex justify-between no-wrap"><span>설계 COP:</span><strong class="text-emerald-600">6.20 (+126% 향상)</strong></div>
+                            <div class="flex justify-between no-wrap"><span>연간 수선비:</span><strong class="text-emerald-600">약 400만 원 (원격관제)</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Direct Parameter Inputs Bar -->
+            <div class="bg-slate-50 px-3 py-2 rounded-xl border border-slate-200 grid grid-cols-5 gap-2 text-xs">
+                <div>
+                    <label class="block text-[10px] font-semibold text-slate-500 mb-0.5 no-wrap">용량 (마력)</label>
+                    <input type="number" id="spec-hp" value="300" min="50" max="2000" step="10"
+                           class="w-full bg-white border border-slate-300 rounded px-2 py-1 font-bold text-slate-800 text-xs">
+                </div>
+                <div id="box-legacy-cop">
+                    <label class="block text-[10px] font-semibold text-slate-500 mb-0.5 no-wrap">기존 실효 COP</label>
+                    <input type="number" id="spec-legacy-cop" value="2.74" min="1.5" max="5.0" step="0.05"
+                           class="w-full bg-white border border-slate-300 rounded px-2 py-1 font-bold text-amber-700 text-xs">
+                </div>
+                <div id="box-legacy-kw" class="hidden">
+                    <label class="block text-[10px] font-semibold text-slate-500 mb-0.5 no-wrap">기존 소비전력(kW)</label>
+                    <input type="number" id="spec-legacy-kw" value="269.5" min="20" max="2000" step="0.5"
+                           class="w-full bg-white border border-slate-300 rounded px-2 py-1 font-bold text-amber-700 text-xs">
+                </div>
+                <div id="box-new-cop">
+                    <label class="block text-[10px] font-semibold text-slate-500 mb-0.5 no-wrap">신규 설계 COP</label>
+                    <input type="number" id="spec-new-cop" value="6.20" min="4.0" max="9.0" step="0.1"
+                           class="w-full bg-white border border-slate-300 rounded px-2 py-1 font-bold text-indigo-700 text-xs">
+                </div>
+                <div id="box-new-kw" class="hidden">
+                    <label class="block text-[10px] font-semibold text-slate-500 mb-0.5 no-wrap">신규 소비전력(kW)</label>
+                    <input type="number" id="spec-new-kw" value="119.1" min="10" max="1000" step="0.5"
+                           class="w-full bg-white border border-slate-300 rounded px-2 py-1 font-bold text-indigo-700 text-xs">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-semibold text-slate-500 mb-0.5 no-wrap">기존 수선비 (만 원)</label>
+                    <input type="number" id="spec-legacy-maint" value="1800" min="0" max="10000" step="100"
+                           class="w-full bg-white border border-slate-300 rounded px-2 py-1 font-bold text-slate-800 text-xs">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-semibold text-slate-500 mb-0.5 no-wrap">신규 투자비 (만 원)</label>
+                    <input type="number" id="spec-capex" value="15000" min="1000" max="100000" step="500"
+                           class="w-full bg-white border border-slate-300 rounded px-2 py-1 font-bold text-slate-800 text-xs">
+                </div>
+            </div>
+
+            <!-- Detailed Specifications Table -->
+            <div class="overflow-hidden rounded-xl border border-slate-200 text-xs">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 text-[11px]">
+                        <tr>
+                            <th class="p-2 border-r border-slate-200 no-wrap">비교 항목</th>
+                            <th class="p-2 border-r border-slate-200 text-center no-wrap">기존 노후 설비</th>
+                            <th class="p-2 border-r border-slate-200 text-center no-wrap">신규 고효율 설비</th>
+                            <th class="p-2 border-r border-slate-200 text-center no-wrap">개선 및 절감 효과</th>
+                            <th class="p-2 no-wrap">산출 근거</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 text-slate-700 font-medium text-[11px]">
+                        <tr>
+                            <td class="p-2 border-r border-slate-200 font-bold no-wrap">용량 / 형식</td>
+                            <td class="p-2 border-r border-slate-200 text-center no-wrap"><span class="tbl-hp-disp">300</span> 마력 / 스크루</td>
+                            <td class="p-2 border-r border-slate-200 text-center no-wrap"><span class="tbl-hp-disp">300</span> 마력 / 인버터 터보</td>
+                            <td class="p-2 border-r border-slate-200 text-center font-semibold text-slate-600 no-wrap">용량 동일 매칭</td>
+                            <td class="p-2 text-slate-500">부하율 70% 최적 운전</td>
+                        </tr>
+                        <tr>
+                            <td class="p-2 border-r border-slate-200 font-bold no-wrap">운전 COP (효율)</td>
+                            <td id="tbl-legacy-cop" class="p-2 border-r border-slate-200 text-center font-bold text-amber-700 no-wrap">2.74</td>
+                            <td id="tbl-new-cop" class="p-2 border-r border-slate-200 text-center font-bold text-indigo-700 no-wrap">6.20</td>
+                            <td class="p-2 border-r border-slate-200 text-center font-bold text-emerald-600 no-wrap">+126% 개선</td>
+                            <td class="p-2 text-slate-500">14년 스케일 열화 반영</td>
+                        </tr>
+                        <tr>
+                            <td class="p-2 border-r border-slate-200 font-bold no-wrap">운전 소비전력</td>
+                            <td id="tbl-legacy-kw" class="p-2 border-r border-slate-200 text-center font-bold text-slate-800 no-wrap">269.5 kW</td>
+                            <td id="tbl-new-kw" class="p-2 border-r border-slate-200 text-center font-bold text-indigo-700 no-wrap">119.1 kW</td>
+                            <td id="tbl-diff-kw" class="p-2 border-r border-slate-200 text-center font-bold text-emerald-600 no-wrap">▼ 150.4 kW</td>
+                            <td class="p-2 text-slate-500">(용량×3.516 ÷ COP) × 70%</td>
+                        </tr>
+                        <tr>
+                            <td class="p-2 border-r border-slate-200 font-bold no-wrap">연간 전기요금 (200원)</td>
+                            <td id="tbl-legacy-elec" class="p-2 border-r border-slate-200 text-center no-wrap">1억 3,474만 원</td>
+                            <td id="tbl-new-elec" class="p-2 border-r border-slate-200 text-center font-semibold text-indigo-700 no-wrap">5,955만 원</td>
+                            <td id="tbl-diff-elec" class="p-2 border-r border-slate-200 text-center font-bold text-emerald-600 no-wrap">▼ 7,519만 원</td>
+                            <td class="p-2 text-slate-500">연간 2,500시간 기준</td>
+                        </tr>
+                        <tr class="bg-indigo-50/80 font-bold text-indigo-950">
+                            <td class="p-2 border-r border-slate-300 no-wrap">연간 총 운영비 (OPEX)</td>
+                            <td id="tbl-legacy-total" class="p-2 border-r border-slate-300 text-center no-wrap">1억 5,274만 원</td>
+                            <td id="tbl-new-total" class="p-2 border-r border-slate-300 text-center no-wrap">6,355만 원</td>
+                            <td id="tbl-diff-total" class="p-2 border-r border-slate-300 text-center text-emerald-700 font-black no-wrap">▼ 8,919만 원 절감</td>
+                            <td class="p-2 text-indigo-900">전기요금 + 수선비 합계</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex justify-between items-center border-t border-slate-100 pt-2 text-xs text-slate-400">
+                <span class="no-wrap">제2장 장비 비교 & 제3장 상세 사양</span>
+                <span class="font-bold text-slate-500">Page 3 of 6</span>
+            </div>
+        </article>
+
+        <!-- ==================== [페이지 4] 제4장 인터랙티브 ROI & 절감액 시뮬레이터 ==================== -->
+        <article class="a4-page border border-slate-200">
+            <!-- Header -->
+            <div class="border-b border-slate-100 pb-2 flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                        <span class="w-2.5 h-5 bg-indigo-600 rounded-full inline-block"></span>
+                        제4장. 인터랙티브 ROI & 연간 절감액 시뮬레이터
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        운전시간(일×시간×월), 전기단가(200~400원), 부하율, 지원금(최대 2억 원)을 조절하여 실시간 수지를 검증합니다.
+                    </p>
+                </div>
+                <button id="btn-reset-sim" type="button" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded-lg transition-colors font-semibold shadow-2xs no-wrap">
+                    ↺ 기본값 리셋
+                </button>
+            </div>
+
+            <!-- Two Columns: Left Controls vs Right Visuals -->
+            <div class="grid grid-cols-12 gap-6 items-center my-auto">
+
+                <!-- Left Column: Controls (6 Cols) -->
+                <div class="col-span-6 space-y-3.5 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+
+                    <!-- 1. Operating Hours -->
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-center whitespace-nowrap">
+                            <span class="font-bold text-slate-800 text-xs no-wrap">연간 운전 시간 계산</span>
+                            <span id="val-hours" class="stat-badge text-indigo-700 font-black text-xs bg-indigo-50 px-2.5 py-0.5 rounded-md border border-indigo-200 no-wrap">
+                                2,500 시간/년
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-11 gap-1 items-center bg-white p-2 rounded-lg border border-slate-300 text-xs">
+                            <div class="col-span-3 text-center">
+                                <label class="block text-[10px] text-slate-500 font-semibold mb-0.5 no-wrap">운전일수(일/월)</label>
+                                <input type="number" id="input-days" min="1" max="31" value="25" class="w-full bg-slate-50 border border-slate-200 rounded px-1 py-0.5 text-center font-bold text-slate-800 text-xs focus:outline-none">
+                            </div>
+                            <div class="col-span-1 text-center text-slate-400 font-bold">×</div>
+                            <div class="col-span-3 text-center">
+                                <label class="block text-[10px] text-slate-500 font-semibold mb-0.5 no-wrap">가동시간(h/일)</label>
+                                <input type="number" id="input-daily-hours" min="1" max="24" value="10" class="w-full bg-slate-50 border border-slate-200 rounded px-1 py-0.5 text-center font-bold text-slate-800 text-xs focus:outline-none">
+                            </div>
+                            <div class="col-span-1 text-center text-slate-400 font-bold">×</div>
+                            <div class="col-span-3 text-center">
+                                <label class="block text-[10px] text-slate-500 font-semibold mb-0.5 no-wrap">가동개월(월/년)</label>
+                                <input type="number" id="input-months" min="1" max="12" value="10" class="w-full bg-slate-50 border border-slate-200 rounded px-1 py-0.5 text-center font-bold text-slate-800 text-xs focus:outline-none">
+                            </div>
+                        </div>
+                        <input type="range" id="range-hours" min="500" max="6000" step="50" value="2500" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                    </div>
+
+                    <!-- 2. Electric Rate -->
+                    <div class="space-y-1">
+                        <div class="flex justify-between items-center whitespace-nowrap">
+                            <span class="font-bold text-slate-800 text-xs no-wrap">적용 평균 전기 단가</span>
+                            <span id="val-rate" class="stat-badge text-indigo-700 font-black text-xs bg-indigo-50 px-2.5 py-0.5 rounded-md border border-indigo-200 no-wrap">
+                                200 원/kWh
+                            </span>
+                        </div>
+                        <input type="range" id="range-rate" min="200" max="400" step="5" value="200" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                        <div class="flex justify-between text-[10px] text-slate-400 font-medium whitespace-nowrap">
+                            <span class="no-wrap">200원 (현행)</span>
+                            <span class="no-wrap">300원 (인상)</span>
+                            <span class="no-wrap">400원 (고물가/피크)</span>
+                        </div>
+                    </div>
+
+                    <!-- 3. Load Factor -->
+                    <div class="space-y-1">
+                        <div class="flex justify-between items-center whitespace-nowrap">
+                            <span class="font-bold text-slate-800 text-xs no-wrap">평균 운전 부하율</span>
+                            <span id="val-load" class="stat-badge text-indigo-700 font-black text-xs bg-indigo-50 px-2.5 py-0.5 rounded-md border border-indigo-200 no-wrap">
+                                70 %
+                            </span>
+                        </div>
+                        <input type="range" id="range-load" min="50" max="90" step="5" value="70" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                    </div>
+
+                    <!-- 4. Subsidy -->
+                    <div class="space-y-1">
+                        <div class="flex justify-between items-center whitespace-nowrap">
+                            <span class="font-bold text-slate-800 text-xs no-wrap">한전 / 정부 지원금</span>
+                            <span id="val-subsidy" class="stat-badge text-emerald-700 font-black text-xs bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200 no-wrap">
+                                2,500 만 원
+                            </span>
+                        </div>
+                        <input type="range" id="range-subsidy" min="0" max="20000" step="250" value="2500" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600">
+                        <div class="flex justify-between text-[10px] text-slate-400 font-medium whitespace-nowrap">
+                            <span class="no-wrap">0 원 (자부담)</span>
+                            <span class="no-wrap">1억 원</span>
+                            <span class="no-wrap">2억 원 (최대지원)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Twin Metric Highlights & OPEX Bar Chart (6 Cols) -->
+                <div class="col-span-6 space-y-3">
+                    <!-- Clean, Unbreakable Twin Metric Cards -->
+                    <div class="grid grid-cols-2 gap-3 bg-indigo-50/50 p-3 rounded-2xl border border-indigo-100">
+                        <div class="bg-white p-3 rounded-xl border border-indigo-100 shadow-2xs text-center flex flex-col items-center justify-center">
+                            <span class="text-[11px] text-slate-500 font-bold block no-wrap mb-1">연간 예상 절감액</span>
+                            <div class="flex items-baseline justify-center gap-1 whitespace-nowrap">
+                                <span id="sim-annual-savings" class="text-3xl font-black text-indigo-700 tracking-tight leading-none no-wrap">7,039</span>
+                                <span class="text-xs font-bold text-indigo-600 no-wrap">만 원</span>
+                            </div>
+                            <span class="text-[10px] text-emerald-600 font-bold block mt-1.5 no-wrap">운영비 ▼ 59% 절감</span>
+                        </div>
+
+                        <div class="bg-white p-3 rounded-xl border border-emerald-100 shadow-2xs text-center flex flex-col items-center justify-center">
+                            <span class="text-[11px] text-slate-500 font-bold block no-wrap mb-1">예상 회수 기간</span>
+                            <div class="flex items-baseline justify-center gap-1 whitespace-nowrap">
+                                <span id="sim-payback-years" class="text-3xl font-black text-emerald-600 tracking-tight leading-none no-wrap">1.78</span>
+                                <span class="text-xs font-bold text-emerald-700 no-wrap">년</span>
+                            </div>
+                            <span class="text-[10px] text-slate-500 font-medium block mt-1.5 no-wrap">약 21개월 후 전액 회수</span>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Cost Comparison Chart -->
+                    <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-2xs">
+                        <span class="text-[11px] font-bold text-slate-600 block mb-1">연간 운영비용(전력비+수선비) 비교 (만 원)</span>
+                        <div class="h-56 w-full relative">
+                            <canvas id="simChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="flex justify-between items-center border-t border-slate-100 pt-2 text-xs text-slate-400">
+                <span class="no-wrap">제4장 인터랙티브 ROI 시뮬레이터</span>
+                <span class="font-bold text-slate-500">Page 4 of 6</span>
+            </div>
+        </article>
+
+        <!-- ==================== [페이지 5] 제5장 10개년 생애주기비용(LCC) 및 누적 현금흐름 ==================== -->
+        <article class="a4-page border border-slate-200">
+            <!-- Header -->
+            <div class="border-b border-slate-100 pb-2">
+                <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                    <span class="w-2.5 h-5 bg-indigo-600 rounded-full inline-block"></span>
+                    제5장. 향후 10개년 생애주기비용(LCC) 및 누적 현금흐름 분석
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">
+                    기존 설비의 연차별 효율 열화(연 1.5%) 및 수선비 상승(연 5%)을 반영한 장기 누적 현금흐름(LCC) 시뮬레이션입니다.
+                </p>
+            </div>
+
+            <!-- 10-Year Cash Flow Line Chart -->
+            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                <div class="h-52 w-full relative">
+                    <canvas id="cashFlowChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 10-Year Financial Table -->
+            <div class="overflow-hidden rounded-xl border border-slate-200 text-xs">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 text-[11px]">
+                        <tr>
+                            <th class="p-1.5 border-r border-slate-200 text-center no-wrap">경과 연수</th>
+                            <th class="p-1.5 border-r border-slate-200 text-center no-wrap">기존 COP</th>
+                            <th class="p-1.5 border-r border-slate-200 text-right no-wrap">기존 연간 OPEX</th>
+                            <th class="p-1.5 border-r border-slate-200 text-right no-wrap">신규 연간 OPEX</th>
+                            <th class="p-1.5 border-r border-slate-200 text-right no-wrap">연간 절감액</th>
+                            <th class="p-1.5 border-r border-slate-200 text-right no-wrap">누적 순 현금 잔액</th>
+                            <th class="p-1.5 text-center no-wrap">회수 상태</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-cashflow-body" class="divide-y divide-slate-200 font-medium text-slate-700 text-[11px]">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex justify-between items-center border-t border-slate-100 pt-2 text-xs text-slate-400">
+                <span class="no-wrap">제5장 10개년 LCC 누적 현금흐름</span>
+                <span class="font-bold text-slate-500">Page 5 of 6</span>
+            </div>
+        </article>
+
+        <!-- ==================== [페이지 6] 제6장 향후 추진 일정안 (Action Plan) & ESG 효과 ==================== -->
+        <article class="a4-page border border-slate-200">
+            <!-- Header -->
+            <div class="border-b border-slate-100 pb-2 flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                        <span class="w-2.5 h-5 bg-indigo-600 rounded-full inline-block"></span>
+                        제6장. 향후 추진 일정안 (Action Plan) & ESG 환경 효과
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        사업 승인부터 시운전까지의 단계별 일정을 직접 수정하거나 단계를 추가할 수 있습니다.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2 no-wrap no-print">
+                    <button type="button" id="btn-add-schedule-row" class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs font-bold transition-colors no-wrap">
+                        + 일정 추가
+                    </button>
+                    <button type="button" id="btn-reset-schedule" class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200 text-xs font-semibold transition-colors no-wrap">
+                        ↺ 초기화
+                    </button>
+                </div>
+            </div>
+
+            <!-- Editable Action Plan Table -->
+            <div class="overflow-hidden rounded-xl border border-slate-200 text-xs my-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 text-[11px]">
+                        <tr>
+                            <th class="p-2 border-r border-slate-200 text-center w-20 no-wrap">단계</th>
+                            <th class="p-2 border-r border-slate-200 text-center w-28 no-wrap">예상 일정</th>
+                            <th class="p-2 border-r border-slate-200 w-44 no-wrap">핵심 과업명</th>
+                            <th class="p-2 border-r border-slate-200 no-wrap">상세 내용 및 주관 부서</th>
+                            <th class="p-2 text-center w-14 no-wrap no-print">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="schedule-tbody" class="divide-y divide-slate-200 font-medium text-slate-700 text-[11px]">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ESG Environmental Badges -->
+            <div class="bg-teal-50/70 rounded-xl p-4 border border-teal-200 flex justify-between items-center gap-4">
+                <div class="space-y-1">
+                    <span class="inline-flex items-center gap-1.5 bg-teal-100 text-teal-800 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full no-wrap">
+                        <span>🌱</span> 기업 ESG 경영 및 온실가스 감축 인증
+                    </span>
+                    <h4 class="text-sm font-bold text-teal-950">연간 온실가스 감축량: 172.9 tCO₂eq 달성</h4>
+                    <p class="text-xs text-teal-800 text-break-none">
+                        본 고효율 인버터 교체 프로젝트는 연간 약 37만 kWh의 전력을 절감하여
+                        <strong>어린 소나무 약 26,200그루를 식재하는 환경적 효과</strong>를 발휘하며 정부 탄소중립 인증 연계가 가능합니다.
+                    </p>
+                </div>
+                <div class="shrink-0 bg-white p-3 rounded-xl border border-teal-200 text-center shadow-2xs">
+                    <span class="text-[11px] text-slate-500 font-bold block no-wrap">소나무 식재 환산</span>
+                    <span class="text-lg font-black text-teal-700 block no-wrap">약 26,200 그루/년</span>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex justify-between items-center border-t border-slate-100 pt-2 text-xs text-slate-400">
+                <span class="no-wrap">제6장 추진 일정 & ESG 환경 효과</span>
+                <span class="font-bold text-slate-500">Page 6 of 6</span>
+            </div>
+        </article>
+
+    </main>
+
+    <!-- Document Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900/95 text-white px-4 py-2.5 rounded-xl shadow-xl text-xs font-semibold border border-slate-700 transition-opacity duration-300 opacity-0 pointer-events-none no-print">
+        알림 메시지
+    </div>
+
+    <!-- Application Core Script -->
+    <script>
+        // Core Reactive State
+        const state = {
+            hp: 300,
+            inputMode: 'cop', // 'cop' or 'kw'
+            legacyCop: 2.74,
+            newCop: 6.20,
+            legacyKw: 269.5,
+            newKw: 119.1,
+            legacyMaint: 1800, // 만 원
+            newMaint: 400,     // 만 원
+            capexTotal: 15000, // 만 원
+            subsidy: 2500,     // 만 원
+            days: 25,
+            dailyHours: 10,
+            months: 10,
+            hours: 2500,
+            rate: 200,         // 원/kWh
+            load: 70           // %
+        };
+
+        // Action Plan Initial Data
+        let scheduleData = [
+            { stage: '1단계', time: 'D-Day', task: '경영진 품의 및 예산 승인', desc: '공무팀 최종 제안서 상정 및 투자 타당성(ROI) 승인' },
+            { stage: '2단계', time: 'D+10일', task: '한전 고효율 지원금 신청', desc: '한국전력 에너지효율향상사업 사전 신청 및 현장 실사' },
+            { stage: '3단계', time: 'D+30일', task: '장비 발주 및 사전 배관 설계', desc: '초고효율 인버터 터보 칠러 제작 발주 및 반입 동선 점검' },
+            { stage: '4단계', time: 'D+60일', task: '기존 철거 및 신규 설치 시공', desc: '비냉방기 주말을 활용한 무중단 배관/전기 연계 공사' },
+            { stage: '5단계', time: 'D+75일', task: '종합 시운전 및 정부 보조금 수령', desc: '냉매 주입, 자동제어 연동 테스트 및 보조금 환급 완료' }
+        ];
+
+        let simChartInstance = null;
+        let cashFlowChartInstance = null;
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        // Recompute all metrics across the proposal
+        function recompute() {
+            const coolingLoadKw = state.hp * 3.516;
+            const loadFactor = state.load / 100;
+
+            if (state.inputMode === 'cop') {
+                state.legacyKw = (coolingLoadKw / state.legacyCop) * loadFactor;
+                state.newKw = (coolingLoadKw / state.newCop) * loadFactor;
+            } else {
+                state.legacyCop = (coolingLoadKw * loadFactor) / state.legacyKw;
+                state.newCop = (coolingLoadKw * loadFactor) / state.newKw;
+            }
+
+            // Annual kWh
+            const legacyKwh = state.legacyKw * state.hours;
+            const newKwh = state.newKw * state.hours;
+            const diffKwh = legacyKwh - newKwh;
+
+            // Annual Electric Cost (만 원)
+            const legacyElecCost = (legacyKwh * state.rate) / 10000;
+            const newElecCost = (newKwh * state.rate) / 10000;
+            const diffElecCost = legacyElecCost - newElecCost;
+
+            // Total Annual OPEX (만 원)
+            const legacyTotalOpex = legacyElecCost + state.legacyMaint;
+            const newTotalOpex = newElecCost + state.newMaint;
+            const totalSavings = legacyTotalOpex - newTotalOpex;
+
+            // CAPEX & Payback
+            const netCapex = Math.max(0, state.capexTotal - state.subsidy);
+            const paybackYears = totalSavings > 0 ? (netCapex / totalSavings) : 0;
+            const benefit10Yr = (totalSavings * 10) - netCapex;
+
+            // Update UI Elements
+            document.querySelectorAll('.tbl-hp-disp').forEach(el => el.innerText = state.hp);
+            document.getElementById('cover-hp-display').innerText = state.hp;
+
+            // Spec table elements
+            document.getElementById('tbl-legacy-cop').innerText = state.legacyCop.toFixed(2);
+            document.getElementById('tbl-new-cop').innerText = state.newCop.toFixed(2);
+            document.getElementById('tbl-legacy-kw').innerText = state.legacyKw.toFixed(1) + ' kW';
+            document.getElementById('tbl-new-kw').innerText = state.newKw.toFixed(1) + ' kW';
+            document.getElementById('tbl-diff-kw').innerText = '▼ ' + (state.legacyKw - state.newKw).toFixed(1) + ' kW';
+
+            document.getElementById('tbl-legacy-elec').innerText = Math.round(legacyElecCost).toLocaleString() + '만 원';
+            document.getElementById('tbl-new-elec').innerText = Math.round(newElecCost).toLocaleString() + '만 원';
+            document.getElementById('tbl-diff-elec').innerText = '▼ ' + Math.round(diffElecCost).toLocaleString() + '만 원';
+
+            document.getElementById('tbl-legacy-total').innerText = Math.round(legacyTotalOpex).toLocaleString() + '만 원';
+            document.getElementById('tbl-new-total').innerText = Math.round(newTotalOpex).toLocaleString() + '만 원';
+            document.getElementById('tbl-diff-total').innerText = '▼ ' + Math.round(totalSavings).toLocaleString() + '만 원 절감';
+
+            // Top KPI Cards
+            document.getElementById('kpi-net-capex').innerText = Math.round(netCapex).toLocaleString();
+            document.getElementById('kpi-annual-savings').innerText = Math.round(totalSavings).toLocaleString();
+            document.getElementById('kpi-payback').innerText = paybackYears.toFixed(2);
+            document.getElementById('kpi-10yr-benefit').innerText = Math.round(benefit10Yr).toLocaleString();
+
+            // Simulator Twin Metric Highlights
+            document.getElementById('sim-annual-savings').innerText = Math.round(totalSavings).toLocaleString();
+            document.getElementById('sim-payback-years').innerText = paybackYears.toFixed(2);
+
+            // Update Charts and 10-Year Table
+            updateSimChart(legacyElecCost, state.legacyMaint, newElecCost, state.newMaint);
+            updateCashFlow(netCapex, totalSavings);
+        }
+
+        // Render & Update Simulator OPEX Chart
+        function updateSimChart(legacyElec, legacyMaint, newElec, newMaint) {
+            const ctx = document.getElementById('simChart').getContext('2d');
+            const data = {
+                labels: ['기존 노후 설비', '신규 고효율 도입안'],
+                datasets: [
+                    {
+                        label: '전력 요금 (만 원)',
+                        data: [Math.round(legacyElec), Math.round(newElec)],
+                        backgroundColor: '#4f46e5',
+                        borderRadius: 6
+                    },
+                    {
+                        label: '수선유지비 (만 원)',
+                        data: [Math.round(legacyMaint), Math.round(newMaint)],
+                        backgroundColor: '#06b6d4',
+                        borderRadius: 6
+                    }
+                ]
+            };
+
+            if (simChartInstance) {
+                simChartInstance.data = data;
+                simChartInstance.update();
+            } else {
+                simChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { stacked: true, grid: { display: false } },
+                            y: {
+                                stacked: true,
+                                grid: { color: '#f1f5f9' },
+                                ticks: {
+                                    callback: function(v) { return v.toLocaleString() + '만'; }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: { position: 'top', labels: { boxWidth: 12, font: { family: 'Pretendard', size: 11 } } },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(ctx) {
+                                        return ctx.dataset.label + ': ' + ctx.raw.toLocaleString() + ' 만 원';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Render & Update 10-Year Cash Flow Chart & Table
+        function updateCashFlow(netCapex, firstYearSavings) {
+            const tbody = document.getElementById('table-cashflow-body');
+            tbody.innerHTML = '';
+
+            const years = ['0년차', '1년차', '2년차', '3년차', '4년차', '5년차', '6년차', '7년차', '8년차', '9년차', '10년차'];
+            const cumulativeBalances = [-netCapex];
+
+            // Row 0
+            tbody.innerHTML += `
+                <tr class="bg-slate-50 font-bold">
+                    <td class="p-1 border-r border-slate-200 text-center no-wrap">도입 시점 (0년)</td>
+                    <td class="p-1 border-r border-slate-200 text-center no-wrap">-</td>
+                    <td class="p-1 border-r border-slate-200 text-right no-wrap">-</td>
+                    <td class="p-1 border-r border-slate-200 text-right text-rose-600 no-wrap">${Math.round(netCapex).toLocaleString()} 만 원</td>
+                    <td class="p-1 border-r border-slate-200 text-right no-wrap">-</td>
+                    <td class="p-1 border-r border-slate-200 text-right text-rose-600 no-wrap">-${Math.round(netCapex).toLocaleString()} 만 원</td>
+                    <td class="p-1 text-center text-slate-400 no-wrap">초기 투자</td>
+                </tr>
+            `;
+
+            let currentBal = -netCapex;
+            for (let yr = 1; yr <= 10; yr++) {
+                const degLegacyCop = state.legacyCop / (1 + 0.015 * (yr - 1));
+                const degLegacyKwh = ((state.hp * 3.516 / degLegacyCop) * (state.load / 100)) * state.hours;
+                const degLegacyOpex = ((degLegacyKwh * state.rate) / 10000) + (state.legacyMaint * Math.pow(1.05, yr - 1));
+
+                const newKwh = state.newKw * state.hours;
+                const newOpex = ((newKwh * state.rate) / 10000) + (state.newMaint * Math.pow(1.02, yr - 1));
+
+                const savings = degLegacyOpex - newOpex;
+                currentBal += savings;
+                cumulativeBalances.push(Math.round(currentBal));
+
+                const isPositive = currentBal >= 0;
+                const statusBadge = isPositive
+                    ? '<span class="bg-emerald-100 text-emerald-800 text-[9px] font-bold px-1.5 py-0.5 rounded-full no-wrap">흑자 전환</span>'
+                    : '<span class="bg-slate-100 text-slate-500 text-[9px] font-medium px-1.5 py-0.5 rounded-full no-wrap">회수 중</span>';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-1 border-r border-slate-200 text-center font-bold no-wrap">${yr}년차</td>
+                        <td class="p-1 border-r border-slate-200 text-center no-wrap">${degLegacyCop.toFixed(2)}</td>
+                        <td class="p-1 border-r border-slate-200 text-right no-wrap">${Math.round(degLegacyOpex).toLocaleString()} 만 원</td>
+                        <td class="p-1 border-r border-slate-200 text-right no-wrap">${Math.round(newOpex).toLocaleString()} 만 원</td>
+                        <td class="p-1 border-r border-slate-200 text-right font-bold text-emerald-600 no-wrap">+${Math.round(savings).toLocaleString()} 만 원</td>
+                        <td class="p-1 border-r border-slate-200 text-right font-black ${isPositive ? 'text-emerald-600' : 'text-rose-600'} no-wrap">
+                            ${currentBal >= 0 ? '+' : ''}${Math.round(currentBal).toLocaleString()} 만 원
+                        </td>
+                        <td class="p-1 text-center no-wrap">${statusBadge}</td>
+                    </tr>
+                `;
+            }
+
+            // Cash Flow Chart Render
+            const ctx = document.getElementById('cashFlowChart').getContext('2d');
+            const chartData = {
+                labels: years,
+                datasets: [{
+                    label: '누적 순 현금 잔액 (만 원)',
+                    data: cumulativeBalances,
+                    borderColor: '#4f46e5',
+                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                    borderWidth: 2.5,
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 3.5,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#4f46e5',
+                    pointBorderWidth: 2
+                }]
+            };
+
+            if (cashFlowChartInstance) {
+                cashFlowChartInstance.data = chartData;
+                cashFlowChartInstance.update();
+            } else {
+                cashFlowChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                grid: { color: '#e2e8f0' },
+                                ticks: {
+                                    callback: function(v) { return v.toLocaleString() + '만'; }
+                                }
+                            },
+                            x: { grid: { display: false } }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(ctx) {
+                                        return '누적 현금 잔액: ' + ctx.raw.toLocaleString() + ' 만 원';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Render Action Plan Table
+        function renderSchedule() {
+            const tbody = document.getElementById('schedule-tbody');
+            tbody.innerHTML = '';
+            scheduleData.forEach((row, idx) => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-1.5 border-r border-slate-200 text-center font-bold no-wrap">
+                            <input type="text" value="${row.stage}" class="w-full text-center bg-transparent focus:bg-white border-b border-transparent focus:border-indigo-400 font-bold text-slate-800 text-xs" onchange="scheduleData[${idx}].stage = this.value">
+                        </td>
+                        <td class="p-1.5 border-r border-slate-200 text-center no-wrap">
+                            <input type="text" value="${row.time}" class="w-full text-center bg-transparent focus:bg-white border-b border-transparent focus:border-indigo-400 font-semibold text-indigo-700 text-xs" onchange="scheduleData[${idx}].time = this.value">
+                        </td>
+                        <td class="p-1.5 border-r border-slate-200 no-wrap">
+                            <input type="text" value="${row.task}" class="w-full bg-transparent focus:bg-white border-b border-transparent focus:border-indigo-400 font-bold text-slate-800 text-xs" onchange="scheduleData[${idx}].task = this.value">
+                        </td>
+                        <td class="p-1.5 border-r border-slate-200">
+                            <input type="text" value="${row.desc}" class="w-full bg-transparent focus:bg-white border-b border-transparent focus:border-indigo-400 text-slate-600 text-xs" onchange="scheduleData[${idx}].desc = this.value">
+                        </td>
+                        <td class="p-1.5 text-center no-print no-wrap">
+                            <button type="button" onclick="deleteScheduleRow(${idx})" class="text-slate-400 hover:text-rose-600 font-bold px-1.5 py-0.5 rounded transition-colors text-xs">✕</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function deleteScheduleRow(idx) {
+            scheduleData.splice(idx, 1);
+            renderSchedule();
+        }
+
+        // Image upload helper
+        function setupImageUpload(inputId, imgId) {
+            const input = document.getElementById(inputId);
+            const img = document.getElementById(imgId);
+            input.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        img.src = evt.target.result;
+                        showToast("이미지가 성공적으로 교체되었습니다.");
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Direct Page-by-Page A4 Landscape PDF Generator (ZERO Blank Pages, 100% Alignment)
+        async function downloadPDF() {
+            const btn = document.getElementById('btn-download-pdf');
+            const btnText = document.getElementById('pdf-text');
+            const btnIcon = document.getElementById('pdf-icon');
+
+            btn.disabled = true;
+            btnIcon.innerText = "⏳";
+            btnText.innerText = "A4 가로 PDF 생성 중...";
+            showToast("6개 페이지를 정밀 캡처하여 고품질 PDF를 생성 중입니다...");
+
+            const clientName = document.getElementById('client-company-name').value || '고객사';
+            const fileName = `HVAC_설비교체_투자타당성보고서_${clientName.replace(/\s+/g, '_')}_A4가로.pdf`;
+
+            try {
+                // Initialize jsPDF for A4 Landscape
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                const pages = document.querySelectorAll('.a4-page');
+                const totalPages = pages.length;
+
+                for (let i = 0; i < totalPages; i++) {
+                    const pageEl = pages[i];
+                    btnText.innerText = `PDF 생성 중 (${i + 1}/${totalPages} 쪽)...`;
+
+                    // Render individual A4 page element with html2canvas
+                    const canvas = await html2canvas(pageEl, {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: '#ffffff',
+                        windowWidth: 1200
+                    });
+
+                    const imgData = canvas.toDataURL('image/jpeg', 0.96);
+
+                    // If not the first page, add a new A4 landscape page
+                    if (i > 0) {
+                        pdf.addPage('a4', 'landscape');
+                    }
+
+                    // Exactly map the canvas onto the 297mm x 210mm A4 landscape page
+                    pdf.addImage(imgData, 'JPEG', 0, 0, 297, 210);
+                }
+
+                pdf.save(fileName);
+                showToast("A4 가로 6페이지 PDF 저장이 완료되었습니다!");
+            } catch (err) {
+                console.error("PDF export error:", err);
+                showToast("PDF 직접 다운로드 오류로 브라우저 인쇄 창을 엽니다.");
+                window.print();
+            } finally {
+                btn.disabled = false;
+                btnIcon.innerText = "📥";
+                btnText.innerText = "A4 가로 PDF 다운로드 (6쪽)";
+            }
+        }
+
+        // DOM Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            // Setup image uploads
+            setupImageUpload('input-client-img', 'img-client-preview');
+            setupImageUpload('input-legacy-img', 'img-legacy-preview');
+            setupImageUpload('input-new-img', 'img-new-preview');
+
+            // Render schedule
+            renderSchedule();
+
+            // Schedule Buttons
+            document.getElementById('btn-add-schedule-row').addEventListener('click', () => {
+                const count = scheduleData.length + 1;
+                scheduleData.push({ stage: `${count}단계`, time: '일정 협의', task: '추가 과업명', desc: '상세 추진 내용 기입' });
+                renderSchedule();
+            });
+
+            document.getElementById('btn-reset-schedule').addEventListener('click', () => {
+                scheduleData = [
+                    { stage: '1단계', time: 'D-Day', task: '경영진 품의 및 예산 승인', desc: '공무팀 최종 제안서 상정 및 투자 타당성(ROI) 승인' },
+                    { stage: '2단계', time: 'D+10일', task: '한전 고효율 지원금 신청', desc: '한국전력 에너지효율향상사업 사전 신청 및 현장 실사' },
+                    { stage: '3단계', time: 'D+30일', task: '장비 발주 및 사전 배관 설계', desc: '초고효율 인버터 터보 칠러 제작 발주 및 반입 동선 점검' },
+                    { stage: '4단계', time: 'D+60일', task: '기존 철거 및 신규 설치 시공', desc: '비냉방기 주말을 활용한 무중단 배관/전기 연계 공사' },
+                    { stage: '5단계', time: 'D+75일', task: '종합 시운전 및 정부 보조금 수령', desc: '냉매 주입, 자동제어 연동 테스트 및 보조금 환급 완료' }
+                ];
+                renderSchedule();
+                showToast("추진 일정이 기본값으로 리셋되었습니다.");
+            });
+
+            // Operating Hours sync
+            const inDays = document.getElementById('input-days');
+            const inHours = document.getElementById('input-daily-hours');
+            const inMonths = document.getElementById('input-months');
+            const rangeHours = document.getElementById('range-hours');
+            const valHours = document.getElementById('val-hours');
+
+            function syncOperatingHoursFromInputs() {
+                state.days = parseInt(inDays.value) || 25;
+                state.dailyHours = parseInt(inHours.value) || 10;
+                state.months = parseInt(inMonths.value) || 10;
+                state.hours = state.days * state.dailyHours * state.months;
+                rangeHours.value = state.hours;
+                valHours.innerText = state.hours.toLocaleString() + ' 시간/년';
+                recompute();
+            }
+
+            inDays.addEventListener('input', syncOperatingHoursFromInputs);
+            inHours.addEventListener('input', syncOperatingHoursFromInputs);
+            inMonths.addEventListener('input', syncOperatingHoursFromInputs);
+
+            rangeHours.addEventListener('input', (e) => {
+                state.hours = parseInt(e.target.value);
+                valHours.innerText = state.hours.toLocaleString() + ' 시간/년';
+                recompute();
+            });
+
+            // Rate Slider
+            const rangeRate = document.getElementById('range-rate');
+            const valRate = document.getElementById('val-rate');
+            rangeRate.addEventListener('input', (e) => {
+                state.rate = parseInt(e.target.value);
+                valRate.innerText = state.rate.toLocaleString() + ' 원/kWh';
+                recompute();
+            });
+
+            // Load Slider
+            const rangeLoad = document.getElementById('range-load');
+            const valLoad = document.getElementById('val-load');
+            rangeLoad.addEventListener('input', (e) => {
+                state.load = parseInt(e.target.value);
+                valLoad.innerText = state.load + ' %';
+                recompute();
+            });
+
+            // Subsidy Slider
+            const rangeSubsidy = document.getElementById('range-subsidy');
+            const valSubsidy = document.getElementById('val-subsidy');
+            rangeSubsidy.addEventListener('input', (e) => {
+                state.subsidy = parseInt(e.target.value);
+                if (state.subsidy >= 10000) {
+                    valSubsidy.innerText = state.subsidy.toLocaleString() + ' 만 원 (' + (state.subsidy/10000).toFixed(1) + '억 원)';
+                } else {
+                    valSubsidy.innerText = state.subsidy.toLocaleString() + ' 만 원';
+                }
+                recompute();
+            });
+
+            // Reset Simulator Button
+            document.getElementById('btn-reset-sim').addEventListener('click', () => {
+                inDays.value = 25;
+                inHours.value = 10;
+                inMonths.value = 10;
+                state.hours = 2500;
+                rangeHours.value = 2500;
+                valHours.innerText = '2,500 시간/년';
+
+                state.rate = 200;
+                rangeRate.value = 200;
+                valRate.innerText = '200 원/kWh';
+
+                state.load = 70;
+                rangeLoad.value = 70;
+                valLoad.innerText = '70 %';
+
+                state.subsidy = 2500;
+                rangeSubsidy.value = 2500;
+                valSubsidy.innerText = '2,500 만 원';
+
+                recompute();
+                showToast("시뮬레이터가 기본 설정값으로 복원되었습니다.");
+            });
+
+            // Input Mode Toggle
+            const btnCop = document.getElementById('btn-mode-cop');
+            const btnKw = document.getElementById('btn-mode-kw');
+            const boxLegacyCop = document.getElementById('box-legacy-cop');
+            const boxLegacyKw = document.getElementById('box-legacy-kw');
+            const boxNewCop = document.getElementById('box-new-cop');
+            const boxNewKw = document.getElementById('box-new-kw');
+
+            btnCop.addEventListener('click', () => {
+                state.inputMode = 'cop';
+                btnCop.className = 'px-2.5 py-1 rounded-md bg-white font-bold text-indigo-700 shadow-2xs no-wrap';
+                btnKw.className = 'px-2.5 py-1 rounded-md text-slate-600 hover:text-slate-900 font-medium no-wrap';
+                boxLegacyCop.classList.remove('hidden');
+                boxLegacyKw.classList.add('hidden');
+                boxNewCop.classList.remove('hidden');
+                boxNewKw.classList.add('hidden');
+                recompute();
+            });
+
+            btnKw.addEventListener('click', () => {
+                state.inputMode = 'kw';
+                btnKw.className = 'px-2.5 py-1 rounded-md bg-white font-bold text-indigo-700 shadow-2xs no-wrap';
+                btnCop.className = 'px-2.5 py-1 rounded-md text-slate-600 hover:text-slate-900 font-medium no-wrap';
+                boxLegacyCop.classList.add('hidden');
+                boxLegacyKw.classList.remove('hidden');
+                boxNewCop.classList.add('hidden');
+                boxNewKw.classList.remove('hidden');
+                recompute();
+            });
+
+            // Specification inputs
+            document.getElementById('spec-hp').addEventListener('input', (e) => {
+                state.hp = parseFloat(e.target.value) || 300;
+                recompute();
+            });
+            document.getElementById('spec-legacy-cop').addEventListener('input', (e) => {
+                state.legacyCop = parseFloat(e.target.value) || 2.74;
+                recompute();
+            });
+            document.getElementById('spec-legacy-kw').addEventListener('input', (e) => {
+                state.legacyKw = parseFloat(e.target.value) || 269.5;
+                recompute();
+            });
+            document.getElementById('spec-new-cop').addEventListener('input', (e) => {
+                state.newCop = parseFloat(e.target.value) || 6.20;
+                recompute();
+            });
+            document.getElementById('spec-new-kw').addEventListener('input', (e) => {
+                state.newKw = parseFloat(e.target.value) || 119.1;
+                recompute();
+            });
+            document.getElementById('spec-legacy-maint').addEventListener('input', (e) => {
+                state.legacyMaint = parseFloat(e.target.value) || 1800;
+                recompute();
+            });
+            document.getElementById('spec-capex').addEventListener('input', (e) => {
+                state.capexTotal = parseFloat(e.target.value) || 15000;
+                recompute();
+            });
+
+            // Header Export buttons
+            document.getElementById('btn-download-pdf').addEventListener('click', downloadPDF);
+            document.getElementById('btn-print').addEventListener('click', () => window.print());
+
+            // Copy Data Button
+            document.getElementById('btn-copy-summary').addEventListener('click', () => {
+                const summary = `
+[HVAC 설비 교체 및 에너지비용 최적화 제안서]
+- 고객사: ${document.getElementById('client-company-name').value} 귀중
+- 설비 용량: ${state.hp} 마력
+- 기존 소비전력: ${state.legacyKw.toFixed(1)} kW (실효 COP ${state.legacyCop.toFixed(2)})
+- 신규 소비전력: ${state.newKw.toFixed(1)} kW (설계 COP ${state.newCop.toFixed(2)})
+- 연간 가동: ${state.hours.toLocaleString()} 시간 (${state.days}일×${state.dailyHours}h×${state.months}월)
+- 적용 단가: ${state.rate} 원/kWh (부하율 ${state.load}%)
+- 연간 총 절감액: ${document.getElementById('kpi-annual-savings').innerText} 만 원/년 (전력비 59% 절약)
+- 순투자비: ${document.getElementById('kpi-net-capex').innerText} 만 원 (지원금 ${state.subsidy}만 원 반영)
+- 예상 회수 기간: ${document.getElementById('kpi-payback').innerText} 년 (2년 미만 회수)
+                `.trim();
+
+                const ta = document.createElement('textarea');
+                ta.value = summary;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showToast("핵심 제안서 데이터가 클립보드에 복사되었습니다.");
+            });
+
+            // Initial recompute
+            recompute();
+        });
+    </script>
+</body>
+</html>
