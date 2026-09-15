@@ -12,9 +12,9 @@
     .touch-btn { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   </style>
 </head>
-<body class="bg-gray-100 text-gray-800 min-h-screen pb-24">
+<body class="bg-gray-100 text-gray-800 min-h-screen pb-20">
 
-  <!-- 헤더 바 -->
+  <!-- 헤더 -->
   <header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-xs">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
       <div class="flex items-center space-x-2.5">
@@ -40,12 +40,12 @@
     </div>
   </header>
 
-  <!-- 본문 컨테이너 -->
+  <!-- 메인 본문 -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-5">
     
-    <!-- 요약 대시보드 & 툴바 -->
-    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div class="flex flex-wrap items-center gap-4">
+    <!-- 요약 대시보드 및 버튼 바 -->
+    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="flex items-baseline space-x-3">
         <div>
           <div class="flex items-center space-x-2 mb-1">
             <span class="text-xs text-gray-400 font-semibold uppercase tracking-wider" id="amountLabel">총 지출 금액</span>
@@ -55,39 +55,48 @@
           </div>
           <div class="text-2xl sm:text-3xl font-black text-indigo-600 tracking-tight" id="totalAmountText">0원</div>
         </div>
-        <div class="text-xs text-gray-400 font-medium self-end pb-1" id="totalCountText">총 0건</div>
+        <div class="text-xs text-gray-400 font-medium" id="totalCountText">총 0건</div>
       </div>
-
-      <div class="flex items-center space-x-2">
-        <button type="button" id="btnExportExcel" class="touch-btn flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center justify-center shadow-xs">
+      
+      <!-- 기능 버튼 모음 -->
+      <div class="flex items-center flex-wrap gap-2">
+        <input type="file" id="inputExcelUpload" accept=".xlsx, .xls, .csv" class="hidden" />
+        
+        <button type="button" id="btnUploadExcel" class="touch-btn flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl flex items-center justify-center shadow-xs">
+          <i data-lucide="upload" class="w-4 h-4 mr-1.5"></i> 엑셀 업로드
+        </button>
+        
+        <button type="button" id="btnExportExcel" class="touch-btn flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl flex items-center justify-center shadow-xs">
           <i data-lucide="file-spreadsheet" class="w-4 h-4 mr-1.5"></i> 엑셀 다운로드
         </button>
-        <button type="button" id="btnOpenAddModal" class="touch-btn flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center justify-center shadow-xs">
+        
+        <button type="button" id="btnOpenAddModal" class="touch-btn flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl flex items-center justify-center shadow-xs">
           <i data-lucide="plus" class="w-4 h-4 mr-1.5"></i> 새 영수증 등록
         </button>
       </div>
     </div>
 
-    <!-- 1. 데스크탑 테이블 뷰 (캡처 시트 컬럼 규격과 완벽 일치) -->
+    <!-- 1. 데스크탑 테이블 뷰 (이용목적 오른쪽에 이카운트 현장명 배치) -->
     <div class="hidden sm:block bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-indigo-900 text-white text-[11px] font-bold uppercase tracking-wider border-b border-indigo-950">
-              <th class="py-3.5 px-3 w-16 text-center">영수증</th>
-              <th class="py-3.5 px-3 w-16 text-center">명세서</th>
+              <th class="py-3.5 px-3 w-14 text-center">영수증</th>
+              <th class="py-3.5 px-3 w-14 text-center">명세서</th>
               <th class="py-3.5 px-4 w-28">사용일자</th>
-              <th class="py-3.5 px-4 w-48">사용처</th>
+              <th class="py-3.5 px-4 w-44">사용처</th>
               <th class="py-3.5 px-4 w-32 text-right">결제금액</th>
-              <th class="py-3.5 px-4 w-28 text-center">계정과목</th>
+              <th class="py-3.5 px-4 w-24 text-center">계정과목</th>
               <th class="py-3.5 px-4 w-24 text-center">결제자</th>
               <th class="py-3.5 px-4">이용목적</th>
-              <th class="py-3.5 px-4 w-24 text-center">관리</th>
+              <th class="py-3.5 px-4 w-36 text-indigo-200">이카운트 현장명</th>
+              <th class="py-3.5 px-4 w-20 text-center">관리</th>
             </tr>
           </thead>
           <tbody id="desktopTableBody" class="divide-y divide-gray-100 text-xs font-medium text-gray-700">
             <tr>
-              <td colspan="9" class="py-12 text-center text-gray-400 font-normal">등록된 내역이 없습니다.</td>
+              <td colspan="10" class="py-12 text-center text-gray-400 font-normal">등록된 내역이 없습니다.</td>
             </tr>
           </tbody>
         </table>
@@ -97,7 +106,7 @@
     <!-- 2. 모바일 카드 뷰 -->
     <div id="mobileCardContainer" class="block sm:hidden space-y-3">
       <div class="p-8 text-center text-gray-400 text-sm bg-white rounded-2xl border border-dashed border-gray-200">
-        등록된 내역이 없습니다.
+        등록된 영수증 내역이 없습니다.
       </div>
     </div>
 
@@ -107,7 +116,7 @@
   <div id="expenseModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[92vh]">
       <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-        <h2 id="modalTitle" class="text-base font-bold text-gray-900">영수증 & 거래명세서 등록</h2>
+        <h2 id="modalTitle" class="text-base font-bold text-gray-900">영수증 등록</h2>
         <button type="button" id="btnCloseModal" class="touch-btn text-gray-400 hover:text-gray-600 p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
@@ -122,13 +131,13 @@
             <input type="date" id="inputDate" required class="w-full px-3 py-2 border rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">결제금액 (원) *</label>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">결제 금액 (원) *</label>
             <input type="number" id="inputAmount" placeholder="예: 310200" required class="w-full px-3 py-2 border rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none" />
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">사용처 *</label>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">사용처 (가맹점명) *</label>
           <input type="text" id="inputMerchant" placeholder="예: (주)귀뚜라미보일러천안점" required class="w-full px-3 py-2 border rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none" />
         </div>
 
@@ -141,14 +150,14 @@
             <select id="inputCategory" class="w-full px-3 py-2 border rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white"></select>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">결제자</label>
-            <input type="text" id="inputUser" placeholder="예: 홍길동" class="w-full px-3 py-2 border rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none" />
+            <label class="block text-xs font-semibold text-gray-600 mb-1">결제자/카드</label>
+            <input type="text" id="inputUser" placeholder="예: 이상규" class="w-full px-3 py-2 border rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none" />
           </div>
         </div>
 
         <div id="newCategoryWrap" class="hidden">
           <label class="block text-xs font-semibold text-indigo-600 mb-1">새 계정과목명 입력</label>
-          <input type="text" id="inputNewCategoryName" placeholder="추가할 계정과목명 입력" class="w-full px-3 py-2 border border-indigo-200 bg-indigo-50/40 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none" />
+          <input type="text" id="inputNewCategoryName" placeholder="추가할 과목명 입력" class="w-full px-3 py-2 border border-indigo-200 bg-indigo-50/40 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none" />
         </div>
 
         <div>
@@ -156,27 +165,35 @@
           <input type="text" id="inputPurpose" placeholder="예: 서광레미콘 EHS 자재 부품 구매" class="w-full px-3 py-2 border rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none" />
         </div>
 
-        <!-- 사진 첨부: 1. 영수증 / 2. 거래명세서 -->
+        <!-- 신규 추가: 이카운트 현장명 입력 필드 -->
+        <div class="bg-indigo-50/50 p-3 rounded-xl border border-indigo-100">
+          <label class="block text-xs font-bold text-indigo-900 mb-1 flex items-center">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5 mr-1 text-indigo-600"></i> 이카운트 현장명 (자유 입력)
+          </label>
+          <input type="text" id="inputSite" placeholder="예: 천안현장, 서광 아파트 현장 등 자유롭게 입력" class="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 outline-none" />
+        </div>
+
+        <!-- 사진 첨부 -->
         <div class="grid grid-cols-2 gap-3 pt-1 border-t border-gray-100">
-          <div class="space-y-1.5">
-            <label class="block text-xs font-bold text-gray-700 flex items-center">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1 flex items-center">
               <i data-lucide="receipt" class="w-3.5 h-3.5 mr-1 text-indigo-600"></i> 영수증 사진
             </label>
             <input type="file" id="inputReceiptFile" accept="image/*" class="w-full text-[11px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100" />
-            <div id="receiptPreviewWrap" class="hidden flex items-center space-x-2 mt-1">
+            <div id="receiptPreviewWrap" class="mt-2 hidden flex items-center space-x-2">
               <img id="receiptPreviewImg" src="" alt="영수증" class="w-14 h-14 object-cover rounded-lg border shadow-xs" />
-              <button type="button" id="btnRemoveReceiptImg" class="text-[11px] text-red-500 hover:underline">삭제</button>
+              <button type="button" id="btnRemoveReceipt" class="text-xs text-red-500 hover:underline">사진 지우기</button>
             </div>
           </div>
 
-          <div class="space-y-1.5">
-            <label class="block text-xs font-bold text-gray-700 flex items-center">
-              <i data-lucide="file-text" class="w-3.5 h-3.5 mr-1 text-emerald-600"></i> 거래명세서
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1 flex items-center">
+              <i data-lucide="file-text" class="w-3.5 h-3.5 mr-1 text-emerald-600"></i> 거래명세서 사진
             </label>
             <input type="file" id="inputStatementFile" accept="image/*" class="w-full text-[11px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-emerald-50 file:text-emerald-600 hover:file:bg-emerald-100" />
-            <div id="statementPreviewWrap" class="hidden flex items-center space-x-2 mt-1">
-              <img id="statementPreviewImg" src="" alt="거래명세서" class="w-14 h-14 object-cover rounded-lg border shadow-xs" />
-              <button type="button" id="btnRemoveStatementImg" class="text-[11px] text-red-500 hover:underline">삭제</button>
+            <div id="statementPreviewWrap" class="mt-2 hidden flex items-center space-x-2">
+              <img id="statementPreviewImg" src="" alt="명세서" class="w-14 h-14 object-cover rounded-lg border-2 border-emerald-500 shadow-xs" />
+              <button type="button" id="btnRemoveStatement" class="text-xs text-red-500 hover:underline">명세서 지우기</button>
             </div>
           </div>
         </div>
@@ -204,14 +221,14 @@
     </div>
   </div>
 
-  <!-- 삭제 확인 모달 -->
+  <!-- 삭제 모달 -->
   <div id="deleteConfirmModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl p-5 space-y-4">
       <div class="flex items-center space-x-3 text-red-600">
         <i data-lucide="alert-triangle" class="w-6 h-6 shrink-0"></i>
         <h3 class="text-base font-bold text-gray-900">영수증 내역 삭제</h3>
       </div>
-      <p class="text-xs text-gray-600">해당 내역을 삭제하시겠습니까? 구글 드라이브와 시트에서 모두 영구 제거됩니다.</p>
+      <p class="text-xs text-gray-600">해당 내역을 삭제하시겠습니까? 구글 드라이브와 시트에서 모두 제거됩니다.</p>
       <div class="flex space-x-2 pt-1">
         <button type="button" id="btnCancelDelete" class="touch-btn flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-xl">취소</button>
         <button type="button" id="btnConfirmDelete" class="touch-btn flex-1 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl shadow-xs">삭제하기</button>
@@ -219,7 +236,7 @@
     </div>
   </div>
 
-  <!-- 드라이브 설정 모달 -->
+  <!-- 설정 모달 -->
   <div id="configModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-5 space-y-4">
       <div class="flex items-center justify-between border-b pb-2">
@@ -234,7 +251,7 @@
     </div>
   </div>
 
-  <!-- 토스트 알림 바 -->
+  <!-- 토스트 알림 -->
   <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900/90 text-white text-xs px-4 py-2.5 rounded-full shadow-lg pointer-events-none transition-opacity duration-300 opacity-0 z-70 flex items-center space-x-1.5">
     <span id="toastMsg">알림 메시지</span>
   </div>
@@ -251,8 +268,8 @@
     let customCategories = [];
     let selectedMonth = 'all';
     let pendingDeleteId = null;
-    let tempReceiptImg = '';
-    let tempStatementImg = '';
+    let base64ReceiptTemp = '';
+    let base64StatementTemp = '';
 
     function getDriveUrl() {
       const stored = localStorage.getItem(DRIVE_URL_KEY);
@@ -320,7 +337,7 @@
       }
     }
 
-    // ★ 시트 캡처 구조와 100% 일치하도록 정제 (임의 쪼개기/왜곡 원천 차단)
+    // 데이터 정제 함수 (이카운트 현장명 site 필드 포함)
     function normalizeExpense(item, index) {
       let amount = 0;
       if (typeof item.amount === 'number') amount = item.amount;
@@ -342,6 +359,7 @@
         category: String(item.category || '기타').trim(),
         user: String(item.user || '-').trim(),
         purpose: String(item.purpose || '-').trim(),
+        site: String(item.site || '').trim(), // 이카운트 현장명
         imageUrl: String(item.imageUrl || '').trim(),
         statementUrl: String(item.statementUrl || '').trim()
       };
@@ -402,6 +420,7 @@
       renderList();
     });
 
+    // 화면 렌더링
     function renderList() {
       const tableBody = document.getElementById('desktopTableBody');
       const cardContainer = document.getElementById('mobileCardContainer');
@@ -416,8 +435,8 @@
       amountLabel.innerText = selectedMonth === 'all' ? '총 지출 금액' : `${selectedMonth} 지출 합계`;
 
       if (!filteredExpenses || filteredExpenses.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="9" class="py-12 text-center text-gray-400 font-normal">선택된 기간의 내역이 없습니다.</td></tr>`;
-        cardContainer.innerHTML = `<div class="p-8 text-center text-gray-400 text-sm bg-white rounded-2xl border border-dashed border-gray-200">선택된 기간의 내역이 없습니다.</div>`;
+        tableBody.innerHTML = `<tr><td colspan="10" class="py-12 text-center text-gray-400 font-normal">등록된 내역이 없습니다.</td></tr>`;
+        cardContainer.innerHTML = `<div class="p-8 text-center text-gray-400 text-sm bg-white rounded-2xl border border-dashed border-gray-200">등록된 영수증 내역이 없습니다.</div>`;
         totalAmountText.innerText = '0원';
         totalCountText.innerText = '총 0건';
         if (window.lucide) lucide.createIcons();
@@ -426,18 +445,23 @@
 
       let total = 0;
 
-      // 데스크톱 테이블 행 렌더링
+      // 데스크톱 테이블
       const tableHtml = filteredExpenses.map(item => {
         const amt = Number(item.amount) || 0;
         total += amt;
 
         const receiptCell = item.imageUrl
-          ? `<a href="${item.imageUrl}" target="_blank" class="block w-9 h-9 rounded-lg overflow-hidden border border-indigo-200 hover:opacity-80 transition mx-auto shadow-2xs" title="영수증 원본 보기"><img src="${item.imageUrl}" class="w-full h-full object-cover" alt="영수증" /></a>`
-          : `<div class="w-9 h-9 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-300 mx-auto" title="영수증 없음"><i data-lucide="receipt" class="w-3.5 h-3.5"></i></div>`;
+          ? `<a href="${item.imageUrl}" target="_blank" class="block w-9 h-9 rounded-lg overflow-hidden border border-indigo-200 hover:opacity-80 transition mx-auto shadow-2xs" title="영수증 원본"><img src="${item.imageUrl}" class="w-full h-full object-cover" alt="영수증" /></a>`
+          : `<div class="w-9 h-9 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-300 mx-auto"><i data-lucide="receipt" class="w-4 h-4"></i></div>`;
 
         const statementCell = item.statementUrl
-          ? `<a href="${item.statementUrl}" target="_blank" class="block w-9 h-9 rounded-lg overflow-hidden border border-emerald-300 hover:opacity-80 transition mx-auto shadow-2xs" title="거래명세서 원본 보기"><img src="${item.statementUrl}" class="w-full h-full object-cover" alt="명세서" /></a>`
-          : `<div class="w-9 h-9 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-300 mx-auto" title="명세서 없음"><i data-lucide="file-text" class="w-3.5 h-3.5"></i></div>`;
+          ? `<a href="${item.statementUrl}" target="_blank" class="block w-9 h-9 rounded-lg overflow-hidden border-2 border-emerald-500 hover:opacity-80 transition mx-auto shadow-2xs" title="명세서 원본"><img src="${item.statementUrl}" class="w-full h-full object-cover" alt="명세서" /></a>`
+          : `<div class="w-9 h-9 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-300 mx-auto"><i data-lucide="file-text" class="w-4 h-4"></i></div>`;
+
+        // 이카운트 현장명 태그 스타일
+        const siteCell = item.site 
+          ? `<span class="bg-indigo-50/70 text-indigo-800 font-semibold px-2 py-0.5 rounded border border-indigo-100 truncate block" title="${item.site}">${item.site}</span>`
+          : `<span class="text-gray-300">-</span>`;
 
         return `
           <tr class="hover:bg-indigo-50/40 transition border-b border-gray-100">
@@ -449,6 +473,7 @@
             <td class="py-3 px-4 text-center"><span class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md text-[11px] font-bold border border-indigo-100/60">${item.category || '기타'}</span></td>
             <td class="py-3 px-4 text-center text-gray-500 whitespace-nowrap">${item.user || '-'}</td>
             <td class="py-3 px-4 text-gray-700 truncate max-w-xs" title="${item.purpose || ''}">${item.purpose || '-'}</td>
+            <td class="py-3 px-4 max-w-[140px]">${siteCell}</td>
             <td class="py-3 px-4 text-center whitespace-nowrap">
               <div class="flex items-center justify-center space-x-1.5">
                 <button type="button" class="btn-item-edit p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition" data-id="${item.id}" title="수정">
@@ -463,23 +488,17 @@
         `;
       }).join('');
 
-      // 모바일 카드 뷰 렌더링
+      // 모바일 카드
       const cardHtml = filteredExpenses.map(item => {
         const amt = Number(item.amount) || 0;
-        
-        const rImg = item.imageUrl 
-          ? `<a href="${item.imageUrl}" target="_blank" class="block shrink-0 relative"><img src="${item.imageUrl}" class="w-14 h-14 rounded-xl object-cover border border-indigo-200" alt="영수증" /><span class="absolute bottom-0 right-0 bg-indigo-700/80 text-white text-[9px] px-1 rounded-tl">영수증</span></a>`
-          : ``;
-        const sImg = item.statementUrl
-          ? `<a href="${item.statementUrl}" target="_blank" class="block shrink-0 relative"><img src="${item.statementUrl}" class="w-14 h-14 rounded-xl object-cover border border-emerald-300" alt="명세서" /><span class="absolute bottom-0 right-0 bg-emerald-700/80 text-white text-[9px] px-1 rounded-tl">명세서</span></a>`
-          : ``;
+        const imgTag = item.imageUrl 
+          ? `<a href="${item.imageUrl}" target="_blank" class="block shrink-0"><img src="${item.imageUrl}" class="w-16 h-16 rounded-xl object-cover border border-gray-200" alt="영수증" /></a>` 
+          : `<div class="w-16 h-16 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-300 shrink-0"><i data-lucide="receipt" class="w-6 h-6"></i></div>`;
 
         return `
           <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs flex items-start justify-between space-x-3">
-            <div class="flex items-start space-x-2.5 min-w-0">
-              <div class="flex space-x-1.5 shrink-0">
-                ${rImg || sImg ? `${rImg}${sImg}` : `<div class="w-14 h-14 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-300"><i data-lucide="receipt" class="w-6 h-6"></i></div>`}
-              </div>
+            <div class="flex items-start space-x-3 min-w-0">
+              ${imgTag}
               <div class="space-y-0.5 min-w-0">
                 <div class="flex items-center space-x-1.5">
                   <span class="text-[11px] text-gray-400 font-medium">${item.date || ''}</span>
@@ -487,14 +506,15 @@
                 </div>
                 <h3 class="text-sm font-bold text-gray-900 truncate">${item.merchant || '미입력'}</h3>
                 <p class="text-xs text-gray-500 truncate">${item.purpose || '-'}</p>
+                ${item.site ? `<div class="text-[11px] text-indigo-700 font-bold flex items-center pt-0.5"><i data-lucide="map-pin" class="w-3 h-3 mr-0.5 inline"></i>${item.site}</div>` : ''}
                 <div class="text-sm font-black text-indigo-600 pt-0.5">${amt.toLocaleString()}원</div>
               </div>
             </div>
             <div class="flex flex-col space-y-1.5 shrink-0">
-              <button type="button" class="btn-item-edit touch-btn bg-gray-100 active:bg-gray-200 text-gray-700 text-xs px-2.5 py-1.5 rounded-lg font-bold flex items-center" data-id="${item.id}">
+              <button type="button" class="btn-item-edit touch-btn bg-gray-100 text-gray-700 text-xs px-2.5 py-1.5 rounded-lg font-bold flex items-center" data-id="${item.id}">
                 <i data-lucide="pencil" class="w-3.5 h-3.5 mr-1 pointer-events-none"></i>수정
               </button>
-              <button type="button" class="btn-item-delete touch-btn bg-red-50 active:bg-red-100 text-red-600 text-xs px-2.5 py-1.5 rounded-lg font-bold flex items-center" data-id="${item.id}">
+              <button type="button" class="btn-item-delete touch-btn bg-red-50 text-red-600 text-xs px-2.5 py-1.5 rounded-lg font-bold flex items-center" data-id="${item.id}">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5 mr-1 pointer-events-none"></i>삭제
               </button>
             </div>
@@ -510,6 +530,193 @@
       if (window.lucide) lucide.createIcons();
     }
 
+    // ==========================================
+    // 엑셀 업로드 및 병합 핸들러
+    // ==========================================
+    document.getElementById('btnUploadExcel').addEventListener('click', () => {
+      document.getElementById('inputExcelUpload').click();
+    });
+
+    document.getElementById('inputExcelUpload').addEventListener('change', handleExcelUpload);
+
+    function formatExcelDate(val) {
+      if (!val) return '';
+      if (val instanceof Date) {
+        const y = val.getFullYear();
+        const m = String(val.getMonth() + 1).padStart(2, '0');
+        const d = String(val.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+      if (typeof val === 'number') {
+        const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+        const d = new Date(excelEpoch.getTime() + val * 86400000);
+        const y = d.getUTCFullYear();
+        const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(d.getUTCDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      }
+      const str = String(val).trim().replace(/\//g, '-').replace(/\./g, '-');
+      const match = str.match(/(\d{4})[-](\d{1,2})[-](\d{1,2})/);
+      if (match) {
+        return `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`;
+      }
+      return str.substring(0, 10);
+    }
+
+    async function handleExcelUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      showToast('엑셀 파일을 읽고 분석 중입니다...');
+
+      try {
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: 'array', cellDates: true });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+        if (!rawRows || rawRows.length < 2) {
+          showToast('엑셀에 데이터가 없습니다.');
+          e.target.value = '';
+          return;
+        }
+
+        let headerRowIdx = -1;
+        let colMap = { date: -1, merchant: -1, amount: -1, purpose: -1, site: -1 };
+
+        for (let r = 0; r < Math.min(rawRows.length, 5); r++) {
+          const row = rawRows[r];
+          row.forEach((cell, c) => {
+            const text = String(cell).trim().replace(/\s+/g, '');
+            if (text.includes('일자') || text.includes('날짜')) colMap.date = c;
+            if (text.includes('상대거래처명') || text.includes('거래처') || text.includes('사용처') || text.includes('가맹점')) colMap.merchant = c;
+            if (text.includes('대변') || text.includes('결제금액') || text.includes('출금액') || text === '금액') colMap.amount = c;
+            if (text.includes('적요') || text.includes('이용목적') || text.includes('품목')) colMap.purpose = c;
+            if (text.includes('현장') || text.includes('이카운트')) colMap.site = c;
+          });
+
+          if (colMap.date !== -1 && (colMap.merchant !== -1 || colMap.amount !== -1)) {
+            headerRowIdx = r;
+            break;
+          }
+        }
+
+        if (headerRowIdx === -1) {
+          headerRowIdx = 0;
+          colMap = { date: 0, merchant: 1, amount: 3, purpose: 4, site: -1 };
+        }
+
+        const newItems = [];
+        let addedCount = 0;
+        let skipCount = 0;
+
+        for (let r = headerRowIdx + 1; r < rawRows.length; r++) {
+          const row = rawRows[r];
+          if (!row || row.length === 0) continue;
+
+          let rawDate = row[colMap.date];
+          let rawMerchant = String(row[colMap.merchant] || '').trim();
+          let rawAmount = row[colMap.amount];
+          let rawPurpose = String(row[colMap.purpose] || '').trim();
+          let rawSite = colMap.site !== -1 ? String(row[colMap.site] || '').trim() : '';
+
+          if (!rawDate && !rawMerchant && !rawAmount) continue;
+
+          const formattedDate = formatExcelDate(rawDate);
+
+          let parsedAmount = 0;
+          if (typeof rawAmount === 'number') {
+            parsedAmount = rawAmount;
+          } else if (typeof rawAmount === 'string') {
+            parsedAmount = Number(rawAmount.replace(/[^0-9.-]+/g, '')) || 0;
+          }
+
+          if (parsedAmount <= 0 && !rawMerchant) continue;
+
+          let user = '';
+          const userMatch = rawPurpose.match(/-\((.*?)\)/) || rawPurpose.match(/\((.*?)\)/);
+          if (userMatch && userMatch[1]) {
+            user = userMatch[1].trim();
+          }
+
+          let category = '기타비용';
+          const textToAnalyze = (rawPurpose + ' ' + rawMerchant).toLowerCase();
+          if (textToAnalyze.includes('식대') || textToAnalyze.includes('도시락') || textToAnalyze.includes('음료') || textToAnalyze.includes('식당') || textToAnalyze.includes('클럽')) {
+            category = '복리후생비';
+          } else if (textToAnalyze.includes('접대') || textToAnalyze.includes('미팅')) {
+            category = '접대비';
+          } else if (textToAnalyze.includes('자재') || textToAnalyze.includes('배관') || textToAnalyze.includes('소모품') || textToAnalyze.includes('튜브')) {
+            category = '소모품비';
+          } else if (textToAnalyze.includes('교통') || textToAnalyze.includes('주차') || textToAnalyze.includes('코레일') || textToAnalyze.includes('휴게소') || textToAnalyze.includes('대리')) {
+            category = '여비교통비';
+          } else if (textToAnalyze.includes('차량') || textToAnalyze.includes('주유')) {
+            category = '차량유지비';
+          }
+
+          const cleanMerchant = rawMerchant.replace(/[\(\)주식회사]/g, '').trim();
+          const isExist = expenses.some(exp => {
+            const expClean = (exp.merchant || '').replace(/[\(\)주식회사]/g, '').trim();
+            const dateMatch = (exp.date === formattedDate);
+            const amountMatch = (Number(exp.amount) === parsedAmount);
+            const merchantMatch = expClean && cleanMerchant && (expClean.includes(cleanMerchant) || cleanMerchant.includes(expClean));
+            return dateMatch && amountMatch && merchantMatch;
+          });
+
+          if (isExist) {
+            skipCount++;
+          } else {
+            const newItem = {
+              id: 'exp_' + Date.now() + '_' + Math.floor(Math.random() * 10000),
+              date: formattedDate,
+              merchant: rawMerchant,
+              amount: parsedAmount,
+              category: category,
+              user: user || '-',
+              purpose: rawPurpose || '-',
+              site: rawSite || '',
+              imageUrl: '',
+              statementUrl: ''
+            };
+            newItems.push(newItem);
+            addedCount++;
+          }
+        }
+
+        if (newItems.length > 0) {
+          expenses = [...newItems, ...expenses];
+          expenses.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+          saveLocalExpenses();
+          postToDriveBatch(newItems);
+          showToast(`엑셀 병합 완료: 신규 ${addedCount}건 추가 (기존 ${skipCount}건 보존)`);
+        } else {
+          showToast(`모든 내역(${skipCount}건)이 이미 장부에 존재하여 중복 추가되지 않았습니다.`);
+        }
+
+      } catch (err) {
+        console.error('엑셀 처리 오류:', err);
+        showToast('엑셀 파일 분석 중 오류가 발생했습니다.');
+      } finally {
+        e.target.value = '';
+      }
+    }
+
+    async function postToDriveBatch(items) {
+      const url = getDriveUrl();
+      if (!url || items.length === 0) return;
+      try {
+        await fetch(url, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'save_batch', expenses: items })
+        });
+      } catch (err) {
+        console.warn('드라이브 일괄 전송 지연:', err);
+      }
+    }
+
+    // 모달 및 기본 이벤트 제어
     function handleActionClick(e) {
       const editBtn = e.target.closest('.btn-item-edit');
       const deleteBtn = e.target.closest('.btn-item-delete');
@@ -525,7 +732,7 @@
     mContainer.addEventListener('click', handleActionClick);
     mContainer.addEventListener('touchend', handleActionClick, { passive: false });
 
-    window.openEditModal = function(id) {
+    function openEditModal(id) {
       const target = expenses.find(x => String(x.id) === String(id));
       if (!target) return;
 
@@ -535,6 +742,7 @@
       document.getElementById('inputAmount').value = target.amount || '';
       document.getElementById('inputUser').value = target.user !== '-' ? target.user : '';
       document.getElementById('inputPurpose').value = target.purpose !== '-' ? target.purpose : '';
+      document.getElementById('inputSite').value = target.site || ''; // 이카운트 현장명 채우기
 
       if (target.category && !customCategories.includes(target.category)) {
         customCategories.push(target.category);
@@ -544,63 +752,74 @@
       document.getElementById('inputCategory').value = target.category || customCategories[0];
       document.getElementById('newCategoryWrap').classList.add('hidden');
 
-      tempReceiptImg = target.imageUrl || '';
+      base64ReceiptTemp = target.imageUrl || '';
+      base64StatementTemp = target.statementUrl || '';
+
       const rWrap = document.getElementById('receiptPreviewWrap');
       const rImg = document.getElementById('receiptPreviewImg');
-      if (tempReceiptImg) {
-        rImg.src = tempReceiptImg;
+      if (base64ReceiptTemp) {
+        rImg.src = base64ReceiptTemp;
         rWrap.classList.remove('hidden');
       } else {
         rWrap.classList.add('hidden');
       }
 
-      tempStatementImg = target.statementUrl || '';
       const sWrap = document.getElementById('statementPreviewWrap');
       const sImg = document.getElementById('statementPreviewImg');
-      if (tempStatementImg) {
-        sImg.src = tempStatementImg;
+      if (base64StatementTemp) {
+        sImg.src = base64StatementTemp;
         sWrap.classList.remove('hidden');
       } else {
         sWrap.classList.add('hidden');
       }
 
-      document.getElementById('modalTitle').innerText = '영수증 & 거래명세서 수정';
+      document.getElementById('modalTitle').innerText = '영수증 내역 수정';
       document.getElementById('expenseModal').classList.remove('hidden');
-    };
-
-    window.openDeleteModal = function(id) {
-      pendingDeleteId = id;
-      document.getElementById('deleteConfirmModal').classList.remove('hidden');
-    };
-
-    function setupFileInput(inputId, previewWrapId, previewImgId, onSet) {
-      document.getElementById(inputId).addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-          onSet(evt.target.result);
-          document.getElementById(previewImgId).src = evt.target.result;
-          document.getElementById(previewWrapId).classList.remove('hidden');
-        };
-        reader.readAsDataURL(file);
-      });
     }
 
-    setupFileInput('inputReceiptFile', 'receiptPreviewWrap', 'receiptPreviewImg', (val) => tempReceiptImg = val);
-    setupFileInput('inputStatementFile', 'statementPreviewWrap', 'statementPreviewImg', (val) => tempStatementImg = val);
+    function openDeleteModal(id) {
+      pendingDeleteId = id;
+      document.getElementById('deleteConfirmModal').classList.remove('hidden');
+    }
 
-    document.getElementById('btnRemoveReceiptImg').addEventListener('click', () => {
-      tempReceiptImg = '';
+    // 파일 첨부
+    document.getElementById('inputReceiptFile').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        base64ReceiptTemp = evt.target.result;
+        document.getElementById('receiptPreviewImg').src = base64ReceiptTemp;
+        document.getElementById('receiptPreviewWrap').classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('inputStatementFile').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        base64StatementTemp = evt.target.result;
+        document.getElementById('statementPreviewImg').src = base64StatementTemp;
+        document.getElementById('statementPreviewWrap').classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('btnRemoveReceipt').addEventListener('click', () => {
+      base64ReceiptTemp = '';
       document.getElementById('inputReceiptFile').value = '';
       document.getElementById('receiptPreviewWrap').classList.add('hidden');
     });
-    document.getElementById('btnRemoveStatementImg').addEventListener('click', () => {
-      tempStatementImg = '';
+
+    document.getElementById('btnRemoveStatement').addEventListener('click', () => {
+      base64StatementTemp = '';
       document.getElementById('inputStatementFile').value = '';
       document.getElementById('statementPreviewWrap').classList.add('hidden');
     });
 
+    // 계정과목 직접 입력 전환
     document.getElementById('inputCategory').addEventListener('change', (e) => {
       const wrap = document.getElementById('newCategoryWrap');
       if (e.target.value === '__new__') {
@@ -611,6 +830,7 @@
       }
     });
 
+    // 계정과목 관리 모달
     function renderCategoryManagerList() {
       const list = document.getElementById('catManagerList');
       list.innerHTML = customCategories.map((cat, idx) => `
@@ -655,6 +875,7 @@
       showToast(`'${removed}' 과목이 삭제되었습니다.`);
     });
 
+    // 폼 저장 (이카운트 현장명 포함)
     document.getElementById('expenseForm').addEventListener('submit', (e) => {
       e.preventDefault();
 
@@ -681,8 +902,9 @@
         category: categoryVal,
         user: document.getElementById('inputUser').value.trim(),
         purpose: document.getElementById('inputPurpose').value.trim(),
-        imageUrl: tempReceiptImg || '',
-        statementUrl: tempStatementImg || ''
+        site: document.getElementById('inputSite').value.trim(), // 신규 입력값
+        imageUrl: base64ReceiptTemp || '',
+        statementUrl: base64StatementTemp || ''
       };
 
       if (editId) {
@@ -690,31 +912,12 @@
         showToast('내역이 수정되었습니다.');
       } else {
         expenses.unshift(expenseData);
-        showToast('새 내역이 등록되었습니다.');
+        showToast('새 영수증이 등록되었습니다.');
       }
 
       saveLocalExpenses();
       document.getElementById('expenseModal').classList.add('hidden');
       postToDrive({ action: 'save', expense: expenseData });
-    });
-
-    document.getElementById('btnConfirmDelete').addEventListener('click', () => {
-      if (!pendingDeleteId) return;
-
-      const idToDelete = pendingDeleteId;
-      expenses = expenses.filter(x => String(x.id) !== String(idToDelete));
-      saveLocalExpenses();
-
-      document.getElementById('deleteConfirmModal').classList.add('hidden');
-      showToast('삭제되었습니다.');
-
-      postToDrive({ action: 'delete', id: String(idToDelete) });
-      pendingDeleteId = null;
-    });
-
-    document.getElementById('btnCancelDelete').addEventListener('click', () => {
-      document.getElementById('deleteConfirmModal').classList.add('hidden');
-      pendingDeleteId = null;
     });
 
     async function postToDrive(payload) {
@@ -732,55 +935,57 @@
       }
     }
 
+    // 삭제 실행
+    document.getElementById('btnConfirmDelete').addEventListener('click', () => {
+      if (!pendingDeleteId) return;
+      const idToDelete = pendingDeleteId;
+      expenses = expenses.filter(x => String(x.id) !== String(idToDelete));
+      saveLocalExpenses();
+
+      document.getElementById('deleteConfirmModal').classList.add('hidden');
+      showToast('삭제되었습니다.');
+      postToDrive({ action: 'delete', id: String(idToDelete) });
+      pendingDeleteId = null;
+    });
+
+    document.getElementById('btnCancelDelete').addEventListener('click', () => {
+      document.getElementById('deleteConfirmModal').classList.add('hidden');
+      pendingDeleteId = null;
+    });
+
+    // 전체 동기화
     document.getElementById('btnSyncDrive').addEventListener('click', async () => {
       const url = getDriveUrl();
       if (!url) {
-        showToast('설정 버튼을 눌러 연동 주소를 먼저 등록해주세요.');
+        showToast('설정에서 Web App URL을 먼저 등록해주세요.');
         document.getElementById('configModal').classList.remove('hidden');
         return;
       }
 
       const spinner = document.getElementById('syncSpinner');
       if (spinner) spinner.classList.add('animate-spin');
-      showToast('구글 드라이브 & 스프레드시트 동기화 중...');
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000);
+      showToast('구글 드라이브에서 최신 내역을 동기화 중...');
 
       try {
-        const fetchUrl = url + (url.includes('?') ? '&' : '?') + 'action=get&t=' + Date.now();
-        const res = await fetch(fetchUrl, {
-          method: 'GET',
-          redirect: 'follow',
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const fetchUrl = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+        const res = await fetch(fetchUrl);
         const data = await res.json();
 
         if (Array.isArray(data)) {
           expenses = data.map((item, idx) => normalizeExpense(item, idx));
           saveLocalExpenses();
-          showToast(`동기화 완료: ${expenses.length}건을 성공적으로 갱신했습니다.`);
-        } else if (data && data.error) {
-          showToast('드라이브 오류: ' + data.error);
+          showToast(`동기화 완료: 총 ${expenses.length}건을 불러왔습니다.`);
         } else {
           showToast('데이터 형식이 올바르지 않습니다.');
         }
       } catch (err) {
-        clearTimeout(timeoutId);
-        if (err.name === 'AbortError') {
-          showToast('동기화 시간 초과: 네트워크를 확인하세요.');
-        } else {
-          console.error(err);
-          showToast('동기화 실패: 웹앱 주소 및 배포 권한을 확인하세요.');
-        }
+        showToast('동기화 실패: URL 및 배포 권한을 확인하세요.');
       } finally {
         if (spinner) spinner.classList.remove('animate-spin');
       }
     });
 
+    // 엑셀 다운로드
     document.getElementById('btnExportExcel').addEventListener('click', () => {
       const filtered = selectedMonth === 'all' 
         ? expenses 
@@ -798,6 +1003,7 @@
         '계정과목': item.category || '',
         '결제자': item.user || '',
         '이용목적': item.purpose || '',
+        '이카운트 현장명': item.site || '',
         '영수증링크': item.imageUrl || '',
         '거래명세서링크': item.statementUrl || ''
       }));
@@ -813,39 +1019,37 @@
       showToast(`${filename} 다운로드 완료`);
     });
 
+    // 신규 모달 열기
     document.getElementById('btnOpenAddModal').addEventListener('click', () => {
       document.getElementById('expenseForm').reset();
       document.getElementById('editExpenseId').value = '';
-      tempReceiptImg = '';
-      tempStatementImg = '';
+      document.getElementById('inputSite').value = '';
+      base64ReceiptTemp = '';
+      base64StatementTemp = '';
       document.getElementById('receiptPreviewWrap').classList.add('hidden');
       document.getElementById('statementPreviewWrap').classList.add('hidden');
       document.getElementById('newCategoryWrap').classList.add('hidden');
       document.getElementById('inputDate').value = new Date().toISOString().substring(0, 10);
       updateCategorySelectOptions();
-      document.getElementById('modalTitle').innerText = '새 영수증 & 명세서 등록';
+      document.getElementById('modalTitle').innerText = '새 영수증 등록';
       document.getElementById('expenseModal').classList.remove('hidden');
     });
 
-    document.getElementById('btnCloseModal').addEventListener('click', () => {
-      document.getElementById('expenseModal').classList.add('hidden');
-    });
-    document.getElementById('btnCancelModal').addEventListener('click', () => {
-      document.getElementById('expenseModal').classList.add('hidden');
-    });
+    document.getElementById('btnCloseModal').addEventListener('click', () => document.getElementById('expenseModal').classList.add('hidden'));
+    document.getElementById('btnCancelModal').addEventListener('click', () => document.getElementById('expenseModal').classList.add('hidden'));
 
+    // 설정 모달
     document.getElementById('btnConfigDrive').addEventListener('click', () => {
       document.getElementById('inputDriveUrl').value = getDriveUrl();
       document.getElementById('configModal').classList.remove('hidden');
     });
-    document.getElementById('btnCloseConfig').addEventListener('click', () => {
-      document.getElementById('configModal').classList.add('hidden');
-    });
+    document.getElementById('btnCloseConfig').addEventListener('click', () => document.getElementById('configModal').classList.add('hidden'));
     document.getElementById('btnSaveDriveUrl').addEventListener('click', () => {
       const val = document.getElementById('inputDriveUrl').value.trim();
       localStorage.setItem(DRIVE_URL_KEY, val);
       document.getElementById('configModal').classList.add('hidden');
       showToast('연동 주소가 저장되었습니다.');
+      document.getElementById('btnSyncDrive').click();
     });
 
     document.getElementById('btnClearCache').addEventListener('click', () => {
@@ -858,6 +1062,7 @@
       }
     });
 
+    // 초기 실행
     document.addEventListener('DOMContentLoaded', () => {
       loadCategories();
       loadLocalExpenses();
