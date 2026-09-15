@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>법인카드 영수증 DB</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- 엑셀 스타일 및 하이퍼링크 완벽 지원 엔진 -->
+  <!-- 엑셀 서식 및 하이퍼링크 엔진 -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
@@ -32,8 +32,9 @@
         </div>
       </div>
       <div class="flex items-center space-x-2">
+        <!-- 스피너 분리 래퍼 span 적용 (Lucide 태그 교체 간섭 차단) -->
         <button type="button" id="btnSyncDrive" class="touch-btn bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-2 rounded-lg flex items-center shadow-xs font-semibold">
-          <i data-lucide="refresh-cw" class="w-3.5 h-3.5 mr-1.5" id="syncSpinner"></i> 동기화
+          <span id="syncSpinner" class="inline-flex mr-1.5"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i></span> 동기화
         </button>
         <button type="button" id="btnConfigDrive" class="touch-btn bg-white hover:bg-gray-50 text-gray-700 text-xs px-3 py-2 rounded-lg flex items-center border border-gray-300 shadow-xs font-medium">
           <i data-lucide="settings" class="w-3.5 h-3.5 mr-1.5"></i> 설정
@@ -45,7 +46,7 @@
     </div>
   </header>
 
-  <!-- 본문 영역 (1600px 와이드 지원) -->
+  <!-- 본문 컨테이너 (1600px 와이드) -->
   <main class="max-w-[1600px] mx-auto px-4 sm:px-6 py-5 space-y-4">
     
     <!-- 요약 대시보드 / 정렬 드롭박스 / 버튼 바 -->
@@ -92,7 +93,7 @@
       </div>
     </div>
 
-    <!-- 1. 데스크탑 테이블 뷰 -->
+    <!-- 1. 데스크탑 테이블 뷰 (타이틀 고정 & 여유로운 폭) -->
     <div class="hidden sm:block bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
       <div class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-230px)]">
         <table class="w-full text-left border-collapse min-w-[1260px]">
@@ -128,7 +129,7 @@
 
   </main>
 
-  <!-- 등록 및 수정 모달 (z-50) -->
+  <!-- 등록 및 수정 모달 -->
   <div id="expenseModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white w-full max-w-xl rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[94vh]">
       <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
@@ -181,6 +182,7 @@
           <input type="text" id="inputPurpose" placeholder="예: 서광레미콘 EHS 자재 부품 구매" class="w-full px-3 py-2 border rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none" />
         </div>
 
+        <!-- 거래처 (자유 입력) -->
         <div class="bg-indigo-50/60 p-3 rounded-xl border border-indigo-100">
           <label class="block text-xs font-bold text-indigo-950 mb-1 flex items-center">
             <i data-lucide="building-2" class="w-3.5 h-3.5 mr-1 text-indigo-600"></i> 거래처 (자유 입력)
@@ -263,7 +265,7 @@
     </div>
   </div>
 
-  <!-- ★ 구글 드라이브 사진 선택기 팝업 모달 (z-index: 9999로 최상단 강제 표시) -->
+  <!-- 구글 드라이브 사진 선택기 팝업 모달 (z-index: 9999 최상단) -->
   <div id="drivePickerModal" style="z-index: 9999;" class="fixed inset-0 bg-black/65 backdrop-blur-xs flex items-center justify-center p-4 hidden">
     <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden border border-gray-200">
       <div class="px-5 py-4 border-b flex items-center justify-between bg-gray-50">
@@ -284,7 +286,7 @@
           <input type="text" id="inputSearchDriveImages" placeholder="파일명 또는 날짜, 가맹점 검색..." class="w-full pl-8 pr-3 py-1.5 text-xs border rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" />
         </div>
         <button type="button" id="btnReloadDriveImages" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-3 py-1.5 rounded-lg flex items-center font-semibold">
-          <i data-lucide="refresh-cw" class="w-3.5 h-3.5 mr-1" id="driveImageSpinner"></i> 새로고침
+          <span id="driveImageSpinner" class="inline-flex mr-1"><i data-lucide="refresh-cw" class="w-3 h-3"></i></span> 새로고침
         </button>
       </div>
 
@@ -399,6 +401,23 @@
         toast.classList.remove('opacity-100');
         toast.classList.add('opacity-0');
       }, 2300);
+    }
+
+    // ★ 스피너 회전 완벽 제어 함수 (태그 분리 및 안전한 회수)
+    function setSyncLoading(isLoading) {
+      const wrapper = document.getElementById('syncSpinner');
+      if (wrapper) {
+        if (isLoading) {
+          wrapper.classList.add('animate-spin');
+        } else {
+          wrapper.classList.remove('animate-spin');
+        }
+      }
+      // Lucide가 재구성했을 수 있는 버튼 내부의 모든 잔여 animate-spin 강제 제거
+      const syncBtn = document.getElementById('btnSyncDrive');
+      if (syncBtn && !isLoading) {
+        syncBtn.querySelectorAll('.animate-spin').forEach(el => el.classList.remove('animate-spin'));
+      }
     }
 
     function convertToDirectDriveUrl(input) {
@@ -766,7 +785,7 @@
       document.getElementById('statementPreviewWrap').classList.add('hidden');
     });
 
-    // 구글 드라이브 사진 선택기 팝업
+    // 구글 드라이브 사진 선택기
     const drivePickerModal = document.getElementById('drivePickerModal');
     const driveImagesGrid = document.getElementById('driveImagesGrid');
     const driveImagesLoading = document.getElementById('driveImagesLoading');
@@ -834,6 +853,7 @@
       } finally {
         driveImagesLoading.classList.add('hidden');
         if (spinner) spinner.classList.remove('animate-spin');
+        document.getElementById('btnReloadDriveImages')?.querySelectorAll('.animate-spin').forEach(el => el.classList.remove('animate-spin'));
       }
     }
 
@@ -1262,7 +1282,7 @@
       pendingDeleteId = null;
     });
 
-    // 전체 동기화
+    // ★ 안전한 동기화 실행 리스너
     document.getElementById('btnSyncDrive').addEventListener('click', async () => {
       const url = getDriveUrl();
       if (!url) {
@@ -1271,13 +1291,22 @@
         return;
       }
 
-      const spinner = document.getElementById('syncSpinner');
-      if (spinner) spinner.classList.add('animate-spin');
+      setSyncLoading(true);
       showToast('구글 드라이브에서 최신 내역을 동기화 중...');
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
 
       try {
         const fetchUrl = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
-        const res = await fetch(fetchUrl);
+        const res = await fetch(fetchUrl, {
+          method: 'GET',
+          redirect: 'follow',
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
 
         if (Array.isArray(data)) {
@@ -1288,15 +1317,18 @@
           showToast('데이터 형식이 올바르지 않습니다.');
         }
       } catch (err) {
-        showToast('동기화 실패: URL 및 배포 권한을 확인하세요.');
+        clearTimeout(timeoutId);
+        if (err.name === 'AbortError') {
+          showToast('동기화 시간 초과: 네트워크를 확인하세요.');
+        } else {
+          showToast('동기화 실패: URL 및 배포 권한을 확인하세요.');
+        }
       } finally {
-        if (spinner) spinner.classList.remove('animate-spin');
+        setSyncLoading(false);
       }
     });
 
-    // =========================================================
-    // ★ 스타일 및 하이퍼링크가 완벽 적용된 엑셀 다운로드 엔진
-    // =========================================================
+    // 엑셀 다운로드 (xlsx-js-style 서식 & 하이퍼링크)
     document.getElementById('btnExportExcel').addEventListener('click', () => {
       const filtered = selectedMonth === 'all' 
         ? expenses 
@@ -1310,7 +1342,6 @@
       const headers = ['사용일자', '사용처', '결제금액', '계정과목', '결제자', '이용목적', '거래처', '영수증링크', '거래명세서링크'];
       const dataRows = [];
 
-      // 테두리 스타일 정의
       const thinBorder = {
         top: { style: 'thin', color: { rgb: 'E2E8F0' } },
         bottom: { style: 'thin', color: { rgb: 'E2E8F0' } },
@@ -1325,29 +1356,26 @@
         right: { style: 'thin', color: { rgb: '4338CA' } }
       };
 
-      // 1. 헤더 행 생성
       const headerCells = headers.map(h => ({
         v: h,
         t: 's',
         s: {
           font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 10, name: '맑은 고딕' },
-          fill: { fgColor: { rgb: '3730A3' } }, // 짙은 남색
+          fill: { fgColor: { rgb: '3730A3' } },
           alignment: { horizontal: 'center', vertical: 'center' },
           border: headerBorder
         }
       }));
       dataRows.push(headerCells);
 
-      // 2. 데이터 행 생성
       filtered.forEach((item, rIdx) => {
-        const bgOdd = (rIdx % 2 === 1) ? 'F8FAFC' : 'FFFFFF'; // 가독성용 지브라 스트라이프
+        const bgOdd = (rIdx % 2 === 1) ? 'F8FAFC' : 'FFFFFF';
         const amt = Number(item.amount) || 0;
 
-        // 영수증 하이퍼링크 셀
         const receiptCell = item.imageUrl ? {
           v: '영수증 보기',
           t: 's',
-          l: { Target: item.imageUrl, Tooltip: '클릭 시 영수증 원본 사진 열기' },
+          l: { Target: item.imageUrl, Tooltip: '클릭 시 영수증 원본 열기' },
           s: {
             font: { color: { rgb: '2563EB' }, underline: true, sz: 9.5, name: '맑은 고딕' },
             fill: { fgColor: { rgb: bgOdd } },
@@ -1365,13 +1393,12 @@
           }
         };
 
-        // 거래명세서 하이퍼링크 셀
         const statementCell = item.statementUrl ? {
           v: '명세서 보기',
           t: 's',
-          l: { Target: item.statementUrl, Tooltip: '클릭 시 거래명세서 원본 사진 열기' },
+          l: { Target: item.statementUrl, Tooltip: '클릭 시 거래명세서 원본 열기' },
           s: {
-            font: { color: { rgb: '059669' }, underline: true, sz: 9.5, name: '맑은 고딕' }, // 초록 링크
+            font: { color: { rgb: '059669' }, underline: true, sz: 9.5, name: '맑은 고딕' },
             fill: { fgColor: { rgb: bgOdd } },
             alignment: { horizontal: 'center', vertical: 'center' },
             border: thinBorder
@@ -1388,78 +1415,36 @@
         };
 
         const row = [
-          // 사용일자 (가운데)
-          {
-            v: item.date || '',
-            t: 's',
-            s: { font: { sz: 9.5, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'center', vertical: 'center' }, border: thinBorder }
-          },
-          // 사용처 (좌측)
-          {
-            v: item.merchant || '',
-            t: 's',
-            s: { font: { sz: 9.5, bold: true, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'left', vertical: 'center' }, border: thinBorder }
-          },
-          // 결제금액 (우측, 천 단위 콤마 회계 서식)
-          {
-            v: amt,
-            t: 'n',
-            z: '#,##0',
-            s: { font: { sz: 9.5, bold: true, color: { rgb: '4338CA' }, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'right', vertical: 'center' }, border: thinBorder }
-          },
-          // 계정과목 (가운데)
-          {
-            v: item.category || '',
-            t: 's',
-            s: { font: { sz: 9.5, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'center', vertical: 'center' }, border: thinBorder }
-          },
-          // 결제자 (가운데)
-          {
-            v: item.user || '',
-            t: 's',
-            s: { font: { sz: 9.5, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'center', vertical: 'center' }, border: thinBorder }
-          },
-          // 이용목적 (좌측)
-          {
-            v: item.purpose || '',
-            t: 's',
-            s: { font: { sz: 9.5, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'left', vertical: 'center' }, border: thinBorder }
-          },
-          // 거래처 (좌측)
-          {
-            v: item.site || '',
-            t: 's',
-            s: { font: { sz: 9.5, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'left', vertical: 'center' }, border: thinBorder }
-          },
-          // 영수증링크
+          { v: item.date || '', t: 's', s: { font: { sz: 9.5, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'center', vertical: 'center' }, border: thinBorder } },
+          { v: item.merchant || '', t: 's', s: { font: { sz: 9.5, bold: true, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'left', vertical: 'center' }, border: thinBorder } },
+          { v: amt, t: 'n', z: '#,##0', s: { font: { sz: 9.5, bold: true, color: { rgb: '4338CA' }, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'right', vertical: 'center' }, border: thinBorder } },
+          { v: item.category || '', t: 's', s: { font: { sz: 9.5, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'center', vertical: 'center' }, border: thinBorder } },
+          { v: item.user || '', t: 's', s: { font: { sz: 9.5, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'center', vertical: 'center' }, border: thinBorder } },
+          { v: item.purpose || '', t: 's', s: { font: { sz: 9.5, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'left', vertical: 'center' }, border: thinBorder } },
+          { v: item.site || '', t: 's', s: { font: { sz: 9.5, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'left', vertical: 'center' }, border: thinBorder } },
           receiptCell,
-          // 거래명세서링크
           statementCell
         ];
 
         dataRows.push(row);
       });
 
-      // 3. 워크북 및 워크시트 조합
       const worksheet = XLSX.utils.aoa_to_sheet(dataRows);
-
-      // 열 너비(Width) 자동 최적화
       worksheet['!cols'] = [
-        { wch: 13 }, // 사용일자
-        { wch: 28 }, // 사용처
-        { wch: 15 }, // 결제금액
-        { wch: 13 }, // 계정과목
-        { wch: 11 }, // 결제자
-        { wch: 34 }, // 이용목적
-        { wch: 22 }, // 거래처
-        { wch: 15 }, // 영수증링크
-        { wch: 15 }  // 거래명세서링크
+        { wch: 13 },
+        { wch: 28 },
+        { wch: 15 },
+        { wch: 13 },
+        { wch: 11 },
+        { wch: 34 },
+        { wch: 22 },
+        { wch: 15 },
+        { wch: 15 }
       ];
 
-      // 행 높이(Height) 최적화
-      const rowHeights = [{ hpt: 26 }]; // 헤더 행 높이
+      const rowHeights = [{ hpt: 26 }];
       for (let i = 0; i < filtered.length; i++) {
-        rowHeights.push({ hpt: 22 }); // 데이터 행 높이
+        rowHeights.push({ hpt: 22 });
       }
       worksheet['!rows'] = rowHeights;
 
