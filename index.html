@@ -320,24 +320,17 @@
       }
     }
 
-    // ★ 영수증과 거래명세서 항목 정상 매핑 함수
+    // 영수증 & 명세서 1:1 매핑 데이터 정제 함수
     function normalizeExpense(item, index) {
-      let imgA = item.imageUrl || '';
-      let imgB = item.statementUrl || '';
+      let imageUrl = item.imageUrl || '';
+      let statementUrl = item.statementUrl || '';
 
-      let imageUrl = '';
-      let statementUrl = '';
-
-      if (imgA.includes('영수증') || imgA.includes('receipt')) {
-        imageUrl = imgA;
-        statementUrl = imgB;
-      } else if (imgA.includes('명세서') || imgA.includes('statement')) {
-        statementUrl = imgA;
-        imageUrl = imgB;
-      } else {
-        // 뒤바뀐 인덱스 원위치 맞교환 (A <-> B)
-        imageUrl = imgB;
-        statementUrl = imgA;
+      if (imageUrl.includes('명세서') && !statementUrl) {
+        statementUrl = imageUrl;
+        imageUrl = '';
+      } else if (statementUrl.includes('영수증') && !imageUrl) {
+        imageUrl = statementUrl;
+        statementUrl = '';
       }
 
       let parsedAmount = 0;
@@ -493,7 +486,6 @@
 
       let total = 0;
 
-      // 데스크톱 테이블 렌더링
       const tableHtml = filteredExpenses.map(item => {
         const amt = Number(item.amount) || 0;
         total += amt;
@@ -530,7 +522,6 @@
         `;
       }).join('');
 
-      // 모바일 카드 렌더링
       const cardHtml = filteredExpenses.map(item => {
         const amt = Number(item.amount) || 0;
         
@@ -932,4 +923,3 @@
   </script>
 </body>
 </html>
-
