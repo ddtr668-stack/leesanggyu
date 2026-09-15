@@ -49,7 +49,6 @@
         <div>
           <div class="flex items-center space-x-2 mb-1">
             <span class="text-xs text-gray-400 font-semibold uppercase tracking-wider" id="amountLabel">총 지출 금액</span>
-            <!-- 월별 필터 -->
             <select id="selectMonthFilter" class="text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg px-2.5 py-1 outline-none">
               <option value="all">전체 기간</option>
             </select>
@@ -69,7 +68,7 @@
       </div>
     </div>
 
-    <!-- 1. 데스크탑 테이블 뷰 (sm 이상) -->
+    <!-- 1. 데스크탑 테이블 뷰 -->
     <div class="hidden sm:block bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
@@ -95,7 +94,7 @@
       </div>
     </div>
 
-    <!-- 2. 모바일 카드 뷰 (sm 미만) -->
+    <!-- 2. 모바일 카드 뷰 -->
     <div id="mobileCardContainer" class="block sm:hidden space-y-3">
       <div class="p-8 text-center text-gray-400 text-sm bg-white rounded-2xl border border-dashed border-gray-200">
         등록된 내역이 없습니다.
@@ -147,10 +146,9 @@
           </div>
         </div>
 
-        <!-- 직접 새 과목 입력 필드 -->
         <div id="newCategoryWrap" class="hidden">
           <label class="block text-xs font-semibold text-indigo-600 mb-1">새 계정과목명 입력</label>
-          <input type="text" id="inputNewCategoryName" placeholder="추가할 계정과목명 (예: 회의비)" class="w-full px-3 py-2 border border-indigo-200 bg-indigo-50/40 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none" />
+          <input type="text" id="inputNewCategoryName" placeholder="추가할 과목명 입력" class="w-full px-3 py-2 border border-indigo-200 bg-indigo-50/40 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none" />
         </div>
 
         <div>
@@ -158,9 +156,8 @@
           <input type="text" id="inputPurpose" placeholder="예: EHS 자재 부품 구매" class="w-full px-3 py-2 border rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none" />
         </div>
 
-        <!-- 사진 첨부 2종 분리 (영수증 & 거래명세서) -->
+        <!-- 사진 첨부: 1. 영수증 / 2. 거래명세서 -->
         <div class="grid grid-cols-2 gap-3 pt-1 border-t border-gray-100">
-          <!-- 1. 영수증 사진 -->
           <div class="space-y-1.5">
             <label class="block text-xs font-bold text-gray-700 flex items-center">
               <i data-lucide="receipt" class="w-3.5 h-3.5 mr-1 text-indigo-600"></i> 영수증 사진
@@ -172,7 +169,6 @@
             </div>
           </div>
 
-          <!-- 2. 거래명세서 사진 -->
           <div class="space-y-1.5">
             <label class="block text-xs font-bold text-gray-700 flex items-center">
               <i data-lucide="file-text" class="w-3.5 h-3.5 mr-1 text-emerald-600"></i> 거래명세서
@@ -205,7 +201,6 @@
         <button type="button" id="btnAddCatFromManager" class="bg-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg">추가</button>
       </div>
       <div class="max-h-56 overflow-y-auto space-y-1.5 pr-1" id="catManagerList"></div>
-      <p class="text-[11px] text-gray-400">※ 자주 사용하는 품목/과목(2회 이상 사용)은 자동 보존됩니다.</p>
     </div>
   </div>
 
@@ -214,9 +209,9 @@
     <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl p-5 space-y-4">
       <div class="flex items-center space-x-3 text-red-600">
         <i data-lucide="alert-triangle" class="w-6 h-6 shrink-0"></i>
-        <h3 class="text-base font-bold text-gray-900">영수증 삭제</h3>
+        <h3 class="text-base font-bold text-gray-900">영수증 내역 삭제</h3>
       </div>
-      <p class="text-xs text-gray-600">해당 내역을 삭제하시겠습니까? 구글 드라이브와 모바일 모두에서 제거됩니다.</p>
+      <p class="text-xs text-gray-600">해당 내역을 삭제하시겠습니까? 구글 드라이브와 로컬 저장소에서 모두 제거됩니다.</p>
       <div class="flex space-x-2 pt-1">
         <button type="button" id="btnCancelDelete" class="touch-btn flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-xl">취소</button>
         <button type="button" id="btnConfirmDelete" class="touch-btn flex-1 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl shadow-xs">삭제하기</button>
@@ -239,7 +234,7 @@
     </div>
   </div>
 
-  <!-- 토스트 바 -->
+  <!-- 토스트 알림 바 -->
   <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900/90 text-white text-xs px-4 py-2.5 rounded-full shadow-lg pointer-events-none transition-opacity duration-300 opacity-0 z-70 flex items-center space-x-1.5">
     <span id="toastMsg">알림 메시지</span>
   </div>
@@ -259,14 +254,12 @@
     let tempReceiptImg = '';
     let tempStatementImg = '';
 
-    // 1. 연동 URL 조회
     function getDriveUrl() {
       const stored = localStorage.getItem(DRIVE_URL_KEY);
       if (stored && stored.trim() !== '') return stored.trim();
       return DEFAULT_DRIVE_URL.trim();
     }
 
-    // 2. 토스트 알림
     function showToast(msg) {
       const toast = document.getElementById('toast');
       const toastMsg = document.getElementById('toastMsg');
@@ -280,7 +273,6 @@
       }, 2300);
     }
 
-    // 3. 계정과목 관리 및 2회 이상 사용 품목 자동 편입
     function loadCategories() {
       try {
         const raw = localStorage.getItem(CATEGORIES_KEY);
@@ -328,23 +320,26 @@
       }
     }
 
-    // 4. 열 밀림 자동 보정 및 데이터 정제
+    // ★ 영수증과 거래명세서 항목 정상 매핑 함수
     function normalizeExpense(item, index) {
-      let rawImage1 = item.imageUrl || '';
-      let rawImage2 = item.statementUrl || '';
-      
+      let imgA = item.imageUrl || '';
+      let imgB = item.statementUrl || '';
+
       let imageUrl = '';
       let statementUrl = '';
 
-      // 기존 데이터에 단일 사진만 있고 영수증 칸에 들어가 있던 것은 명세서로 재분류
-      if (rawImage1 && !rawImage2) {
-        statementUrl = rawImage1;
+      if (imgA.includes('영수증') || imgA.includes('receipt')) {
+        imageUrl = imgA;
+        statementUrl = imgB;
+      } else if (imgA.includes('명세서') || imgA.includes('statement')) {
+        statementUrl = imgA;
+        imageUrl = imgB;
       } else {
-        imageUrl = rawImage1;
-        statementUrl = rawImage2;
+        // 뒤바뀐 인덱스 원위치 맞교환 (A <-> B)
+        imageUrl = imgB;
+        statementUrl = imgA;
       }
 
-      // 결제 금액 식별
       let parsedAmount = 0;
       const amountCandidates = [item.user, item.amount, item.purpose];
       for (let cand of amountCandidates) {
@@ -361,7 +356,6 @@
         }
       }
 
-      // 계정과목 식별
       const standardCats = [...new Set([...customCategories, ...BASE_CATEGORIES, '기타비용', '식대'])];
       let category = '기타';
       const catCandidates = [item.merchant, item.category];
@@ -375,7 +369,6 @@
         }
       }
 
-      // 사용처 & 이용 목적 분리
       let combinedText = '';
       if (typeof item.category === 'string' && item.category !== category) {
         combinedText = item.category;
@@ -397,13 +390,11 @@
         purpose = item.purpose || '-';
       }
 
-      // 결제자 추출
       let user = '';
       if (typeof item.user === 'string' && isNaN(Number(item.user.replace(/,/g, '')))) {
         user = item.user;
       }
 
-      // 일자 검증
       let date = item.date || '';
       if (typeof date === 'string' && date.length > 10) date = date.substring(0, 10);
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -423,7 +414,6 @@
       };
     }
 
-    // 5. 로컬 스토리지 입출력
     function loadLocalExpenses() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -446,7 +436,6 @@
       renderList();
     }
 
-    // 6. 월별 필터 갱신
     function updateMonthFilterOptions() {
       const select = document.getElementById('selectMonthFilter');
       if (!select) return;
@@ -480,7 +469,6 @@
       renderList();
     });
 
-    // 7. 목록 렌더링 (데스크탑 테이블 & 모바일 카드 동시 생성)
     function renderList() {
       const tableBody = document.getElementById('desktopTableBody');
       const cardContainer = document.getElementById('mobileCardContainer');
@@ -505,7 +493,7 @@
 
       let total = 0;
 
-      // 데스크탑 테이블 뷰
+      // 데스크톱 테이블 렌더링
       const tableHtml = filteredExpenses.map(item => {
         const amt = Number(item.amount) || 0;
         total += amt;
@@ -542,7 +530,7 @@
         `;
       }).join('');
 
-      // 모바일 카드 뷰
+      // 모바일 카드 렌더링
       const cardHtml = filteredExpenses.map(item => {
         const amt = Number(item.amount) || 0;
         
@@ -589,7 +577,6 @@
       if (window.lucide) lucide.createIcons();
     }
 
-    // 8. 통합 이벤트 위임 핸들러
     function handleActionClick(e) {
       const editBtn = e.target.closest('.btn-item-edit');
       const deleteBtn = e.target.closest('.btn-item-delete');
@@ -605,7 +592,6 @@
     mContainer.addEventListener('click', handleActionClick);
     mContainer.addEventListener('touchend', handleActionClick, { passive: false });
 
-    // 9. 수정 모달 열기
     window.openEditModal = function(id) {
       const target = expenses.find(x => String(x.id) === String(id));
       if (!target) return;
@@ -654,7 +640,6 @@
       document.getElementById('deleteConfirmModal').classList.remove('hidden');
     };
 
-    // 10. 파일 업로드 리스너
     function setupFileInput(inputId, previewWrapId, previewImgId, onSet) {
       document.getElementById(inputId).addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -683,7 +668,6 @@
       document.getElementById('statementPreviewWrap').classList.add('hidden');
     });
 
-    // 11. 직접 입력 전환
     document.getElementById('inputCategory').addEventListener('change', (e) => {
       const wrap = document.getElementById('newCategoryWrap');
       if (e.target.value === '__new__') {
@@ -694,7 +678,6 @@
       }
     });
 
-    // 12. 계정과목 관리 모달 제어
     function renderCategoryManagerList() {
       const list = document.getElementById('catManagerList');
       list.innerHTML = customCategories.map((cat, idx) => `
@@ -739,7 +722,6 @@
       showToast(`'${removed}' 과목이 삭제되었습니다.`);
     });
 
-    // 13. 저장 및 수정 시에만 구글 드라이브 동기화
     document.getElementById('expenseForm').addEventListener('submit', (e) => {
       e.preventDefault();
 
@@ -772,10 +754,10 @@
 
       if (editId) {
         expenses = expenses.map(x => String(x.id) === String(editId) ? expenseData : x);
-        showToast('내역이 수정되었습니다. 드라이브 전송 중...');
+        showToast('내역이 수정되었습니다.');
       } else {
         expenses.unshift(expenseData);
-        showToast('새 내역이 등록되었습니다. 드라이브 전송 중...');
+        showToast('새 내역이 등록되었습니다.');
       }
 
       saveLocalExpenses();
@@ -783,7 +765,6 @@
       postToDrive({ action: 'save', expense: expenseData });
     });
 
-    // 14. 삭제 처리 (삭제 시에만 구글 드라이브 동기화)
     document.getElementById('btnConfirmDelete').addEventListener('click', () => {
       if (!pendingDeleteId) return;
 
@@ -792,7 +773,7 @@
       saveLocalExpenses();
 
       document.getElementById('deleteConfirmModal').classList.add('hidden');
-      showToast('삭제되었습니다. 드라이브 반영 중...');
+      showToast('삭제되었습니다.');
 
       postToDrive({ action: 'delete', id: String(idToDelete) });
       pendingDeleteId = null;
@@ -803,7 +784,6 @@
       pendingDeleteId = null;
     });
 
-    // 15. 구글 드라이브 비동기 요청 전송
     async function postToDrive(payload) {
       const url = getDriveUrl();
       if (!url) return;
@@ -819,7 +799,6 @@
       }
     }
 
-    // 16. 수동 [동기화] 버튼 리스너
     document.getElementById('btnSyncDrive').addEventListener('click', async () => {
       const url = getDriveUrl();
       if (!url) {
@@ -869,7 +848,6 @@
       }
     });
 
-    // 17. 엑셀 파일 다운로드
     document.getElementById('btnExportExcel').addEventListener('click', () => {
       const filtered = selectedMonth === 'all' 
         ? expenses 
@@ -902,7 +880,6 @@
       showToast(`${filename} 다운로드 완료`);
     });
 
-    // 18. 신규 모달 열기 및 닫기
     document.getElementById('btnOpenAddModal').addEventListener('click', () => {
       document.getElementById('expenseForm').reset();
       document.getElementById('editExpenseId').value = '';
@@ -924,7 +901,6 @@
       document.getElementById('expenseModal').classList.add('hidden');
     });
 
-    // 19. 설정 모달 제어
     document.getElementById('btnConfigDrive').addEventListener('click', () => {
       document.getElementById('inputDriveUrl').value = getDriveUrl();
       document.getElementById('configModal').classList.remove('hidden');
@@ -939,7 +915,6 @@
       showToast('연동 주소가 저장되었습니다.');
     });
 
-    // 20. 캐시 삭제 제어
     document.getElementById('btnClearCache').addEventListener('click', () => {
       if (confirm('로컬 내역 캐시를 비우시겠습니까? (연동 설정 주소는 보존됩니다)')) {
         localStorage.removeItem(STORAGE_KEY);
@@ -950,7 +925,6 @@
       }
     });
 
-    // 21. 초기 로드 (자동 동기화 없이 로컬 캐시 즉시 표시)
     document.addEventListener('DOMContentLoaded', () => {
       loadCategories();
       loadLocalExpenses();
