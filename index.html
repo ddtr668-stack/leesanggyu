@@ -148,7 +148,7 @@
 
         <div id="newCategoryWrap" class="hidden">
           <label class="block text-xs font-semibold text-indigo-600 mb-1">새 계정과목명 입력</label>
-          <input type="text" id="inputNewCategoryName" placeholder="추가할 과목명 입력" class="w-full px-3 py-2 border border-indigo-200 bg-indigo-50/40 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none" />
+          <input type="text" id="inputNewCategoryName" placeholder="추가할 계정과목명 입력" class="w-full px-3 py-2 border border-indigo-200 bg-indigo-50/40 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none" />
         </div>
 
         <div>
@@ -156,7 +156,7 @@
           <input type="text" id="inputPurpose" placeholder="예: EHS 자재 부품 구매" class="w-full px-3 py-2 border rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none" />
         </div>
 
-        <!-- 사진 첨부: 1. 영수증 / 2. 거래명세서 -->
+        <!-- 사진 첨부 -->
         <div class="grid grid-cols-2 gap-3 pt-1 border-t border-gray-100">
           <div class="space-y-1.5">
             <label class="block text-xs font-bold text-gray-700 flex items-center">
@@ -320,24 +320,17 @@
       }
     }
 
-    // ★ 영수증과 거래명세서 항목 정상 매핑 함수
+    // 영수증 & 거래명세서 독립 로딩 정제 함수
     function normalizeExpense(item, index) {
-      let imgA = item.imageUrl || '';
-      let imgB = item.statementUrl || '';
+      let imageUrl = item.imageUrl || '';
+      let statementUrl = item.statementUrl || '';
 
-      let imageUrl = '';
-      let statementUrl = '';
-
-      if (imgA.includes('영수증') || imgA.includes('receipt')) {
-        imageUrl = imgA;
-        statementUrl = imgB;
-      } else if (imgA.includes('명세서') || imgA.includes('statement')) {
-        statementUrl = imgA;
-        imageUrl = imgB;
-      } else {
-        // 뒤바뀐 인덱스 원위치 맞교환 (A <-> B)
-        imageUrl = imgB;
-        statementUrl = imgA;
+      if (imageUrl.includes('명세서') && !statementUrl) {
+        statementUrl = imageUrl;
+        imageUrl = '';
+      } else if (statementUrl.includes('영수증') && !imageUrl) {
+        imageUrl = statementUrl;
+        statementUrl = '';
       }
 
       let parsedAmount = 0;
@@ -493,7 +486,6 @@
 
       let total = 0;
 
-      // 데스크톱 테이블 렌더링
       const tableHtml = filteredExpenses.map(item => {
         const amt = Number(item.amount) || 0;
         total += amt;
@@ -530,7 +522,6 @@
         `;
       }).join('');
 
-      // 모바일 카드 렌더링
       const cardHtml = filteredExpenses.map(item => {
         const amt = Number(item.amount) || 0;
         
