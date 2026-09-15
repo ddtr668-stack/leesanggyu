@@ -1328,7 +1328,7 @@
       }
     });
 
-    // 엑셀 다운로드 (xlsx-js-style 서식 & 하이퍼링크)
+   // 엑셀 다운로드 (파일명: 법인카드 영수증_[필터기간]_[다운로드날짜].xlsx)
     document.getElementById('btnExportExcel').addEventListener('click', () => {
       const filtered = selectedMonth === 'all' 
         ? expenses 
@@ -1339,123 +1339,106 @@
         return;
       }
 
-      const headers = ['사용일자', '사용처', '결제금액', '계정과목', '결제자', '이용목적', '거래처', '영수증링크', '거래명세서링크'];
-      const dataRows = [];
+      // 오늘 다운로드 날짜 추출 (YYYY-MM-DD)
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const todayStr = `${year}-${month}-${day}`;
 
-      const thinBorder = {
-        top: { style: 'thin', color: { rgb: 'E2E8F0' } },
-        bottom: { style: 'thin', color: { rgb: 'E2E8F0' } },
-        left: { style: 'thin', color: { rgb: 'E2E8F0' } },
-        right: { style: 'thin', color: { rgb: 'E2E8F0' } }
-      };
+      // 필터링 기간 태그
+      const fileTag = selectedMonth === 'all' ? '전체' : selectedMonth;
+      
+      // ★ 파일명 뒤에 다운로드 날짜 추가
+      const filename = `법인카드 영수증_${fileTag}_${todayStr}.xlsx`;
 
-      const headerBorder = {
-        top: { style: 'medium', color: { rgb: '312E81' } },
-        bottom: { style: 'medium', color: { rgb: '312E81' } },
-        left: { style: 'thin', color: { rgb: '4338CA' } },
-        right: { style: 'thin', color: { rgb: '4338CA' } }
-      };
-
-      const headerCells = headers.map(h => ({
-        v: h,
-        t: 's',
-        s: {
-          font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 10, name: '맑은 고딕' },
-          fill: { fgColor: { rgb: '3730A3' } },
-          alignment: { horizontal: 'center', vertical: 'center' },
-          border: headerBorder
-        }
-      }));
-      dataRows.push(headerCells);
-
-      filtered.forEach((item, rIdx) => {
-        const bgOdd = (rIdx % 2 === 1) ? 'F8FAFC' : 'FFFFFF';
-        const amt = Number(item.amount) || 0;
-
-        const receiptCell = item.imageUrl ? {
-          v: '영수증 보기',
-          t: 's',
-          l: { Target: item.imageUrl, Tooltip: '클릭 시 영수증 원본 열기' },
-          s: {
-            font: { color: { rgb: '2563EB' }, underline: true, sz: 9.5, name: '맑은 고딕' },
-            fill: { fgColor: { rgb: bgOdd } },
-            alignment: { horizontal: 'center', vertical: 'center' },
-            border: thinBorder
-          }
-        } : {
-          v: '-',
-          t: 's',
-          s: {
-            font: { color: { rgb: '94A3B8' }, sz: 9.5, name: '맑은 고딕' },
-            fill: { fgColor: { rgb: bgOdd } },
-            alignment: { horizontal: 'center', vertical: 'center' },
-            border: thinBorder
-          }
-        };
-
-        const statementCell = item.statementUrl ? {
-          v: '명세서 보기',
-          t: 's',
-          l: { Target: item.statementUrl, Tooltip: '클릭 시 거래명세서 원본 열기' },
-          s: {
-            font: { color: { rgb: '059669' }, underline: true, sz: 9.5, name: '맑은 고딕' },
-            fill: { fgColor: { rgb: bgOdd } },
-            alignment: { horizontal: 'center', vertical: 'center' },
-            border: thinBorder
-          }
-        } : {
-          v: '-',
-          t: 's',
-          s: {
-            font: { color: { rgb: '94A3B8' }, sz: 9.5, name: '맑은 고딕' },
-            fill: { fgColor: { rgb: bgOdd } },
-            alignment: { horizontal: 'center', vertical: 'center' },
-            border: thinBorder
-          }
-        };
-
-        const row = [
-          { v: item.date || '', t: 's', s: { font: { sz: 9.5, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'center', vertical: 'center' }, border: thinBorder } },
-          { v: item.merchant || '', t: 's', s: { font: { sz: 9.5, bold: true, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'left', vertical: 'center' }, border: thinBorder } },
-          { v: amt, t: 'n', z: '#,##0', s: { font: { sz: 9.5, bold: true, color: { rgb: '4338CA' }, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'right', vertical: 'center' }, border: thinBorder } },
-          { v: item.category || '', t: 's', s: { font: { sz: 9.5, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'center', vertical: 'center' }, border: thinBorder } },
-          { v: item.user || '', t: 's', s: { font: { sz: 9.5, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'center', vertical: 'center' }, border: thinBorder } },
-          { v: item.purpose || '', t: 's', s: { font: { sz: 9.5, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'left', vertical: 'center' }, border: thinBorder } },
-          { v: item.site || '', t: 's', s: { font: { sz: 9.5, name: '맑은 고딕' }, fill: { fgColor: { rgb: bgOdd } }, alignment: { horizontal: 'left', vertical: 'center' }, border: thinBorder } },
-          receiptCell,
-          statementCell
-        ];
-
-        dataRows.push(row);
-      });
-
-      const worksheet = XLSX.utils.aoa_to_sheet(dataRows);
-      worksheet['!cols'] = [
-        { wch: 13 },
-        { wch: 28 },
-        { wch: 15 },
-        { wch: 13 },
-        { wch: 11 },
-        { wch: 34 },
-        { wch: 22 },
-        { wch: 15 },
-        { wch: 15 }
+      // 엑셀 데이터 구성
+      const headers = [
+        '사용일자', '사용처', '결제금액', '계정과목', 
+        '결제자', '이용목적', '거래처', '영수증링크', '거래명세서링크'
       ];
 
-      const rowHeights = [{ hpt: 26 }];
-      for (let i = 0; i < filtered.length; i++) {
-        rowHeights.push({ hpt: 22 });
+      const rows = [headers];
+
+      filtered.forEach(item => {
+        rows.push([
+          item.date || '',
+          item.merchant || '',
+          Number(item.amount) || 0,
+          item.category || '기타',
+          item.user || '',
+          item.purpose || '',
+          item.site || '',
+          item.imageUrl ? { t: 's', v: '영수증 보기', l: { Target: item.imageUrl } } : '',
+          item.statementUrl ? { t: 's', v: '거래명세서 보기', l: { Target: item.statementUrl } } : ''
+        ]);
+      });
+
+      const worksheet = XLSX.utils.aoa_to_sheet(rows);
+
+      // 열 너비 지정
+      worksheet['!cols'] = [
+        { wch: 13 }, // 사용일자
+        { wch: 22 }, // 사용처
+        { wch: 14 }, // 결제금액
+        { wch: 14 }, // 계정과목
+        { wch: 12 }, // 결제자
+        { wch: 26 }, // 이용목적
+        { wch: 18 }, // 거래처
+        { wch: 15 }, // 영수증링크
+        { wch: 15 }  // 거래명세서링크
+      ];
+
+      // 헤더 및 셀 스타일 적용 (xlsx-js-style 지원 시)
+      const range = XLSX.utils.decode_range(worksheet['!ref']);
+      for (let R = range.s.r; R <= range.e.r; ++R) {
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+          const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+          if (!worksheet[cellAddress]) continue;
+
+          if (R === 0) {
+            // 헤더 스타일 (짙은 남색 배경 + 흰색 굵은 글씨)
+            worksheet[cellAddress].s = {
+              fill: { fgColor: { rgb: "3730A3" } },
+              font: { color: { rgb: "FFFFFF" }, bold: true, sz: 10, name: "맑은 고딕" },
+              alignment: { horizontal: "center", vertical: "center" },
+              border: {
+                top: { style: 'thin', color: { rgb: "CCCCCC" } },
+                bottom: { style: 'thin', color: { rgb: "CCCCCC" } }
+              }
+            };
+          } else {
+            // 본문 행 스타일
+            const isAmountCol = (C === 2);
+            const isLinkCol = (C === 7 || C === 8);
+
+            worksheet[cellAddress].s = {
+              font: isLinkCol 
+                ? { color: { rgb: "2563EB" }, underline: true, sz: 9, name: "맑은 고딕" }
+                : { sz: 9, name: "맑은 고딕" },
+              alignment: { 
+                horizontal: isAmountCol ? "right" : (C === 0 || C === 3 || C === 4 || isLinkCol ? "center" : "left"), 
+                vertical: "center" 
+              },
+              border: {
+                bottom: { style: 'thin', color: { rgb: "E5E7EB" } }
+              }
+            };
+
+            // 금액 천 단위 쉼표 서식
+            if (isAmountCol) {
+              worksheet[cellAddress].z = '#,##0';
+            }
+          }
+        }
       }
-      worksheet['!rows'] = rowHeights;
 
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, '영수증내역');
 
-      const fileTag = selectedMonth === 'all' ? '전체' : selectedMonth;
-      const filename = `법인카드 영수증_${fileTag}.xlsx`;
-
+      // 파일 다운로드 실행
       XLSX.writeFile(workbook, filename);
-      showToast(`${filename} 깔끔한 스타일로 다운로드 완료`);
+      showToast(`${filename} 다운로드 완료`);
     });
 
     // 신규 모달 열기
